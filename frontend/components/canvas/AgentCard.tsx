@@ -24,11 +24,12 @@ interface Props {
   x: number;
   y: number;
   working?: boolean;
+  index?: number;
   onClick?: (agent: Agent) => void;
   onDragEnd?: (agent: Agent, x: number, y: number) => void;
 }
 
-export function AgentCard({ agent, x, y, working, onClick, onDragEnd }: Props) {
+export function AgentCard({ agent, x, y, working, index = 0, onClick, onDragEnd }: Props) {
   const Icon = ICON_MAP[agent.icon] ?? Telescope;
   const scale = useCanvasScale();
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
@@ -83,7 +84,13 @@ export function AgentCard({ agent, x, y, working, onClick, onDragEnd }: Props) {
     <div
       onMouseDown={handleMouseDown}
       className="pointer-events-auto absolute w-[280px] cursor-grab select-none rounded-2xl border border-border bg-card p-4 shadow-rest transition-shadow duration-150 hover:shadow-raised active:cursor-grabbing"
-      style={{ left: posX, top: posY, borderLeftWidth: 4, borderLeftColor: agent.color }}
+      style={{
+        left: posX,
+        top: posY,
+        borderLeftWidth: 4,
+        borderLeftColor: agent.color,
+        animation: `card-appear 380ms ease-out ${index * 70}ms backwards`,
+      }}
     >
       {working && (
         <>

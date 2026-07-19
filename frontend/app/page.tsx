@@ -131,7 +131,7 @@ export default function Home() {
 
       <div className="flex-1">
         <Canvas>
-          {AGENTS.map((agent) => {
+          {AGENTS.map((agent, i) => {
             const pos = positions[agent.id];
             const working = activity?.agentId === agent.id;
             return (
@@ -141,6 +141,7 @@ export default function Home() {
                 x={pos.x}
                 y={pos.y}
                 working={working}
+                index={i}
                 onDragEnd={handleDragEnd}
                 onClick={setSelectedAgent}
               />
