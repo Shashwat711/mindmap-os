@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "DecisionGraph",
-  description: "Your decision intelligence workspace",
+  title: "mindmap-os",
+  description: "Your AI cofounder team on a canvas",
 };
 
 export default function RootLayout({

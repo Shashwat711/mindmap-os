@@ -1,3 +1,7 @@
 {
-  "name": "decision-graph"
+  "name": "mindmap-os",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ]
 }
