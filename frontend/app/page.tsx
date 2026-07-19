@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AGENTS } from "@/lib/agents";
+import { AgentCard } from "@/components/canvas/AgentCard";
+import { AGENTS, getAgentById } from "@/lib/agents";
 import type { Agent } from "@/lib/types";
 
 const ICON_MAP: Record<string, typeof Telescope> = {
@@ -66,6 +67,85 @@ function Nav() {
         </div>
       </div>
     </header>
+  );
+}
+
+function HeroPreview() {
+  // 0: researcher thinking; 1: researcher done → pm starts + line draws;
+  // 2: pm thinking, line marching; 3: pm done, line fading; loop
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const durations = [1800, 500, 2200, 900];
+    let cancelled = false;
+    let i = 0;
+    let timeout: ReturnType<typeof setTimeout>;
+    function step() {
+      if (cancelled) return;
+      setPhase(i);
+      timeout = setTimeout(() => {
+        i = (i + 1) % durations.length;
+        step();
+      }, durations[i]);
+    }
+    step();
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  const researcher = getAgentById("researcher");
+  const pm = getAgentById("pm");
+  if (!researcher || !pm) return null;
+
+  const researcherPos = { x: 40, y: 40 };
+  const pmPos = { x: 460, y: 200 };
+
+  const researcherWorking = phase === 0;
+  const pmWorking = phase === 1 || phase === 2;
+  const showLine = phase === 1 || phase === 2 || phase === 3;
+  const lineOpacity = phase === 3 ? 0.35 : 1;
+
+  const fromPortX = researcherPos.x + 280;
+  const fromPortY = researcherPos.y + 92;
+  const toPortX = pmPos.x;
+  const toPortY = pmPos.y + 92;
+  const bendX = fromPortX + 40;
+
+  return (
+    <div
+      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      style={{ width: 780, height: 400 }}
+    >
+      <svg
+        className="absolute left-0 top-0 overflow-visible"
+        style={{
+          width: 1,
+          height: 1,
+          opacity: showLine ? lineOpacity : 0,
+          transition: "opacity 400ms ease-out",
+        }}
+        aria-hidden
+      >
+        <path
+          d={`M ${fromPortX} ${fromPortY} L ${bendX} ${fromPortY} L ${bendX} ${toPortY} L ${toPortX} ${toPortY}`}
+          fill="none"
+          stroke={researcher.accentColor}
+          strokeWidth={1.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="4 6"
+          style={{ animation: "wire-flow 0.9s linear infinite" }}
+        />
+      </svg>
+      <AgentCard
+        agent={researcher}
+        x={researcherPos.x}
+        y={researcherPos.y}
+        working={researcherWorking}
+      />
+      <AgentCard agent={pm} x={pmPos.x} y={pmPos.y} working={pmWorking} />
+    </div>
   );
 }
 
@@ -129,11 +209,21 @@ function Hero() {
             backgroundSize: "24px 24px",
           }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center font-mono text-[11px] text-neutral-600">
-              <div>{/* preview mounts here in the next commit */}</div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 border-b"
+            style={{
+              backgroundColor: "rgba(15, 15, 15, 0.85)",
+              borderBottomColor: "#1a1a1a",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <div className="mx-auto flex h-full max-w-md items-center justify-center gap-2 font-mono text-[10.5px] text-neutral-500">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+              <span>demo.mindmap-os · auto-playing</span>
             </div>
           </div>
+          <HeroPreview />
         </div>
       </div>
     </section>
