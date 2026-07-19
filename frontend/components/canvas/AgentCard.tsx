@@ -81,24 +81,26 @@ export function AgentCard({ agent, x, y, onClick, onDragEnd }: Props) {
   return (
     <div
       onMouseDown={handleMouseDown}
-      className="pointer-events-auto absolute w-[280px] cursor-grab select-none rounded-2xl border border-border/70 bg-card p-4 shadow-sm transition hover:shadow-md active:cursor-grabbing"
+      className="pointer-events-auto absolute w-[280px] cursor-grab select-none rounded-2xl border border-border bg-card p-4 shadow-rest transition-shadow duration-150 hover:shadow-raised active:cursor-grabbing"
       style={{ left: posX, top: posY, borderLeftWidth: 4, borderLeftColor: agent.color }}
     >
       <div className="flex items-start gap-3">
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-          style={{ backgroundColor: `${agent.color}18`, color: agent.color }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+          style={{ backgroundColor: `${agent.color}1F`, color: agent.color }}
         >
-          <Icon size={18} />
+          <Icon size={18} strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold leading-tight text-card-foreground">
+          <div className="text-[15px] font-semibold leading-tight tracking-tight text-card-foreground">
             {agent.name}
           </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">{agent.title}</div>
+          <div className="mt-0.5 text-[12px] leading-none text-muted-foreground">
+            {agent.title}
+          </div>
         </div>
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-card-foreground/80">
+      <p className="mt-3 text-[13px] leading-relaxed text-card-foreground/85">
         {agent.description}
       </p>
     </div>
