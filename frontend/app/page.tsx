@@ -65,6 +65,19 @@ export default function Home() {
     agentId: AgentId;
     toolCalls: ToolCall[];
   } | null>(null);
+  const [unreadAgents, setUnreadAgents] = useState<Set<AgentId>>(new Set());
+
+  function selectAgent(agent: Agent | null) {
+    setSelectedAgent(agent);
+    if (agent) {
+      setUnreadAgents((prev) => {
+        if (!prev.has(agent.id)) return prev;
+        const next = new Set(prev);
+        next.delete(agent.id);
+        return next;
+      });
+    }
+  }
 
   useEffect(() => {
     const storedPositions = readStorage<Positions>(STORAGE_KEYS.cardPositions);
@@ -159,9 +172,10 @@ export default function Home() {
                 y={pos.y}
                 working={working}
                 selected={isSelected}
+                unread={unreadAgents.has(agent.id)}
                 index={i}
                 onDragEnd={handleDragEnd}
-                onClick={setSelectedAgent}
+                onClick={selectAgent}
               />
             );
           })}
@@ -173,7 +187,7 @@ export default function Home() {
         agent={selectedAgent}
         context={context}
         connector={connector}
-        onClose={() => setSelectedAgent(null)}
+        onClose={() => selectAgent(null)}
         onActivity={setActivity}
       />
 

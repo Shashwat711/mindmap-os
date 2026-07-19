@@ -25,6 +25,7 @@ interface Props {
   y: number;
   working?: boolean;
   selected?: boolean;
+  unread?: boolean;
   index?: number;
   onClick?: (agent: Agent) => void;
   onDragEnd?: (agent: Agent, x: number, y: number) => void;
@@ -36,6 +37,7 @@ export function AgentCard({
   y,
   working,
   selected,
+  unread,
   index = 0,
   onClick,
   onDragEnd,
@@ -125,6 +127,26 @@ export function AgentCard({
             }}
           />
         </>
+      )}
+      {unread && !selected && (
+        <span
+          aria-label="New message"
+          className="pointer-events-none absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center"
+        >
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-full"
+            style={{
+              backgroundColor: agent.accentColor,
+              animation: "badge-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite",
+              opacity: 0.55,
+            }}
+          />
+          <span
+            className="relative h-2 w-2 rounded-full ring-2 ring-background"
+            style={{ backgroundColor: agent.accentColor }}
+          />
+        </span>
       )}
       <div className="relative flex items-start gap-3">
         <div
