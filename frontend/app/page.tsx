@@ -69,6 +69,7 @@ function synthesizeActivity(agentId: AgentId): {
       toolId: p.toolId,
       status: "running" as const,
       summary: p.summary,
+      fetchUrl: p.fetchUrl,
       startedAt: now,
     })),
   };

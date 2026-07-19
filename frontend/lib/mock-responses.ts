@@ -12,6 +12,18 @@ interface ToolPlanSpec {
   toolId: string;
   summary: (msg: string, ctx: StartupContext | null) => string;
   result: (msg: string, ctx: StartupContext | null) => string;
+  fetchUrl?: (msg: string, ctx: StartupContext | null) => string;
+}
+
+function slug(text: string, max = 40): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 6)
+    .join("-")
+    .slice(0, max);
 }
 
 const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
@@ -20,11 +32,14 @@ const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
       toolId: "web-search",
       summary: (msg) => `Searching for "${trim(msg)}"`,
       result: () => "12 relevant results across YC, Product Hunt, and X",
+      fetchUrl: (msg) =>
+        `GET api.serpapi.com/search?q=${slug(msg) || "market-sizing"}&engine=google`,
     },
     {
       toolId: "competitor-scan",
       summary: () => "Scanning three competitor sites",
       result: () => "Cataloged pricing, ICP language, and hero copy",
+      fetchUrl: () => "GET mealime.com,plantoeat.com,paprikaapp.com",
     },
   ],
   pm: [
@@ -32,6 +47,7 @@ const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
       toolId: "roadmap-writer",
       summary: (_msg, ctx) => `Drafting 30-day roadmap for ${summarize(ctx)}`,
       result: () => "4 weekly milestones, 12 candidate tickets",
+      fetchUrl: () => "POST /internal/roadmap/scope",
     },
   ],
   cmo: [
@@ -39,11 +55,13 @@ const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
       toolId: "landing-analyzer",
       summary: () => "Analyzing top-3 landing pages in your category",
       result: () => "5 reusable headline patterns identified",
+      fetchUrl: () => "GET mealime.com/pricing, plantoeat.com, paprikaapp.com/features",
     },
     {
       toolId: "copy-tester",
       summary: () => "Generating 4 headline variants for A/B",
       result: () => "2 direct, 2 curiosity-driven",
+      fetchUrl: () => "POST /internal/copy/variants?n=6",
     },
   ],
   "lead-gen": [
@@ -52,11 +70,13 @@ const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
       summary: (_msg, ctx) =>
         `Apollo search: ${ctx?.icp ? trim(ctx.icp, 32) : "your ICP"}`,
       result: () => "247 people at 89 companies. Verified emails: 71%",
+      fetchUrl: () => "GET api.apollo.io/v1/mixed_people/search",
     },
     {
       toolId: "linkedin-scan",
       summary: () => "Enriching prospects from LinkedIn Sales Nav",
       result: () => "50 profiles with recent activity signals",
+      fetchUrl: () => "GET linkedin.com/sales/search/people",
     },
   ],
   brand: [
@@ -64,11 +84,13 @@ const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
       toolId: "domain-check",
       summary: () => "Checking .com, .app, .xyz for candidates",
       result: () => "3 of 5 candidates have .com available",
+      fetchUrl: () => "GET whoisxmlapi.com/whoisserver/WhoisService?domain=pantry.app",
     },
     {
       toolId: "trademark-check",
       summary: () => "USPTO + WIPO search across relevant classes",
       result: () => "No conflicting marks in class 42 (software)",
+      fetchUrl: () => "GET tsdr.uspto.gov/api/search?text=pantry&class=42",
     },
   ],
 };
@@ -77,6 +99,7 @@ export interface PlannedToolCall {
   toolId: string;
   summary: string;
   result: string;
+  fetchUrl?: string;
 }
 
 export function planToolCalls(
@@ -89,6 +112,7 @@ export function planToolCalls(
     toolId: p.toolId,
     summary: p.summary(message, context),
     result: p.result(message, context),
+    fetchUrl: p.fetchUrl?.(message, context),
   }));
 }
 

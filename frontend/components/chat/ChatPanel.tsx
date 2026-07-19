@@ -107,6 +107,18 @@ function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
               </span>
             )}
           </div>
+          {running && call.fetchUrl && (
+            <div
+              className="mt-1 truncate rounded-sm bg-background/50 px-1.5 py-0.5 font-mono text-[10.5px] leading-normal text-foreground/60"
+              style={{ animation: "message-in 220ms ease-out" }}
+            >
+              <StreamingText
+                text={call.fetchUrl}
+                mode="char"
+                delayMs={12}
+              />
+            </div>
+          )}
           <div className="mt-0.5 text-[12.5px] leading-snug text-foreground/85">
             {primary}
           </div>

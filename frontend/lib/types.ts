@@ -53,6 +53,7 @@ export interface ToolCall {
   searchingLabel?: string;
   foundLabel?: string;
   sources?: ToolCallSource[];
+  fetchUrl?: string;
 }
 
 export interface ChatMessage {

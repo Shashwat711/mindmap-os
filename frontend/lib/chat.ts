@@ -35,6 +35,7 @@ async function runMock(
     toolId: p.toolId,
     status: "pending",
     summary: p.summary,
+    fetchUrl: p.fetchUrl,
     startedAt: now(),
   }));
 
