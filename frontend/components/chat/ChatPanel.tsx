@@ -36,6 +36,7 @@ interface Props {
   connector: ModelConnector | null;
   onClose: () => void;
   onActivity?: (activity: { agentId: Agent["id"]; toolCalls: ToolCall[] } | null) => void;
+  storageNamespace?: string;
 }
 
 const MONOGRAM_PALETTE = [
@@ -166,7 +167,14 @@ function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
   );
 }
 
-export function ChatPanel({ agent, context, connector, onClose, onActivity }: Props) {
+export function ChatPanel({
+  agent,
+  context,
+  connector,
+  onClose,
+  onActivity,
+  storageNamespace,
+}: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -187,7 +195,7 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
       setMessages([]);
       return;
     }
-    const stored = readStorage<ChatMessage[]>(STORAGE_KEYS.chatHistory(agent.id));
+    const stored = readStorage<ChatMessage[]>(STORAGE_KEYS.chatHistory(agent.id, storageNamespace));
     setMessages(stored ?? []);
   }, [agent]);
 
@@ -226,7 +234,7 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
     };
     const withUser = [...messages, userMsg];
     setMessages(withUser);
-    writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id), withUser);
+    writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id, storageNamespace), withUser);
     setDraft("");
     setSending(true);
     onActivity?.({ agentId: capturedAgent.id, toolCalls: [] });
@@ -238,7 +246,7 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
           existing >= 0
             ? prev.map((m, i) => (i === existing ? msg : m))
             : [...prev, msg];
-        writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id), next);
+        writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id, storageNamespace), next);
         return next;
       });
       if (msg.role === "assistant") {

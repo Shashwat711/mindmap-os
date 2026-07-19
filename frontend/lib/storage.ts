@@ -26,7 +26,8 @@ export function clearStorage(name: string): void {
 export const STORAGE_KEYS = {
   startupContext: "startup-context",
   cardPositions: "card-positions",
-  chatHistory: (agentId: string) => `chat:${agentId}`,
+  chatHistory: (agentId: string, namespace?: string) =>
+    namespace ? `chat:${namespace}:${agentId}` : `chat:${agentId}`,
   connector: "model-connector",
   toolKeys: "tool-keys",
   mcpConnections: "mcp-connections",

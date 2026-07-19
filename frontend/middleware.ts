@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-const PUBLIC_PREFIXES = ["/sign-in", "/auth"];
+const PUBLIC_PREFIXES = ["/sign-in", "/auth", "/demo"];
 
 export async function middleware(request: NextRequest) {
   if (!isSupabaseConfigured()) {

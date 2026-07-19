@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { DEMO_SEEN_KEY, DEMO_TIMELINE, type ReferenceBeat, type TickerEvent } from "@/lib/demo";
+import { DEMO_TIMELINE, type ReferenceBeat, type TickerEvent } from "@/lib/demo";
 import type { AgentId } from "@/lib/types";
 
 export interface DemoHandlers {
@@ -45,7 +45,6 @@ export function useDemoRunner(enabled: boolean, handlers: DemoHandlers) {
       ...DEMO_TIMELINE.badges.map((b) => b.at),
     );
     schedule(lastAt + 400, () => {
-      window.localStorage.setItem(DEMO_SEEN_KEY, "1");
       handlersRef.current.onFinished?.();
     });
 

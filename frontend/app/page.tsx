@@ -117,7 +117,12 @@ export default function Home() {
       setTickerStart((prev) => prev ?? Date.now());
       setTickerEvents((prev) => [...prev, event]);
     },
-    onFinished: () => setDemoEnabled(false),
+    onFinished: () => {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(DEMO_SEEN_KEY, "1");
+      }
+      setDemoEnabled(false);
+    },
   });
 
   function selectAgent(agent: Agent | null) {
