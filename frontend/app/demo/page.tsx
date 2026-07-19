@@ -52,6 +52,15 @@ export default function DemoPage() {
 }
 
 function DemoWorkspace({ onReplay }: { onReplay: () => void }) {
+  useEffect(() => {
+    const prev = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = "#0a0a0a";
+    return () => {
+      document.body.style.backgroundColor = prev;
+    };
+  }, []);
+
+
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [positions, setPositions] = useState(DEFAULT_POSITIONS);
   const [activity, setActivity] = useState<{
