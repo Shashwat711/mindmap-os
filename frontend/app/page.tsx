@@ -72,19 +72,19 @@ export default function Home() {
 
   return (
     <main className="flex h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-border px-4 py-2.5">
-        <div className="flex items-baseline gap-3">
-          <span className="text-sm font-semibold tracking-tight">mindmap-os</span>
+      <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-4">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-sm font-semibold tracking-tight text-foreground">mindmap-os</span>
           <span className="text-xs text-muted-foreground">Your AI cofounder team on a canvas</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setConnectorDialogOpen(true)}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                connectorConnected ? "bg-emerald-500" : "bg-muted-foreground/50"
+                connectorConnected ? "bg-emerald-600" : "bg-muted-foreground/40"
               }`}
             />
             {connectorLabel(connector)}
@@ -92,7 +92,7 @@ export default function Home() {
           {hydrated && context && (
             <button
               onClick={() => setContextDialogOpen(true)}
-              className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               Edit context
             </button>
