@@ -167,6 +167,33 @@ export function AgentCard({
       <p className="relative mt-3 text-[13px] leading-relaxed text-card-foreground/85">
         {agent.description}
       </p>
+
+      <span
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full border border-border bg-background"
+        style={{
+          left: -5,
+          boxShadow: working ? `0 0 0 3px ${agent.accentColor}33` : undefined,
+          borderColor: working ? agent.accentColor : undefined,
+          transition: "box-shadow 180ms ease-out, border-color 180ms ease-out",
+        }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full border border-border bg-background"
+        style={{
+          right: -5,
+          boxShadow: working ? `0 0 0 3px ${agent.accentColor}33` : undefined,
+          borderColor: working ? agent.accentColor : undefined,
+          transition: "box-shadow 180ms ease-out, border-color 180ms ease-out",
+        }}
+      />
     </div>
   );
 }
+
+export const CARD_DIMENSIONS = {
+  width: 280,
+  height: 168,
+  portOffsetY: 84,
+};

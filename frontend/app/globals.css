@@ -106,6 +106,12 @@
   }
 }
 
+@keyframes wire-flow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
 @keyframes ticker-in {
   from {
     opacity: 0;

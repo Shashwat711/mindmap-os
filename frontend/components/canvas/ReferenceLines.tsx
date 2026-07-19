@@ -1,19 +1,22 @@
 "use client";
 
 import { getAgentById } from "@/lib/agents";
+import { CARD_DIMENSIONS } from "./AgentCard";
 import type { ReferenceBeat } from "@/lib/demo";
 import type { AgentId } from "@/lib/types";
-
-const CARD_W = 280;
-const CARD_H = 168;
 
 interface Props {
   refs: ReferenceBeat[];
   positions: Record<AgentId, { x: number; y: number }>;
 }
 
-function centerOf(pos: { x: number; y: number }) {
-  return { x: pos.x + CARD_W / 2, y: pos.y + CARD_H / 2 };
+const { width: CARD_W, portOffsetY: PORT_Y } = CARD_DIMENSIONS;
+
+function portOf(pos: { x: number; y: number }, side: "left" | "right") {
+  return {
+    x: side === "left" ? pos.x : pos.x + CARD_W,
+    y: pos.y + PORT_Y,
+  };
 }
 
 export function ReferenceLines({ refs, positions }: Props) {
@@ -53,42 +56,63 @@ export function ReferenceLines({ refs, positions }: Props) {
         const fromAgent = getAgentById(ref.from);
         if (!from || !to || !fromAgent) return null;
 
-        const a = centerOf(from);
-        const b = centerOf(to);
+        const fromCenterX = from.x + CARD_W / 2;
+        const toCenterX = to.x + CARD_W / 2;
+        const fromSide: "left" | "right" = toCenterX >= fromCenterX ? "right" : "left";
+        const toSide: "left" | "right" = fromSide === "right" ? "left" : "right";
+
+        const a = portOf(from, fromSide);
+        const b = portOf(to, toSide);
+
         const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const dist = Math.hypot(dx, dy) || 1;
+        const distX = Math.abs(dx) || 1;
+        const handle = Math.max(60, Math.min(180, distX * 0.55));
+        const c1x = fromSide === "right" ? a.x + handle : a.x - handle;
+        const c2x = toSide === "left" ? b.x - handle : b.x + handle;
 
-        // Trim endpoints so the line starts/ends at the card edge, not the center.
-        const trim = 90;
-        const ax = a.x + (dx / dist) * trim;
-        const ay = a.y + (dy / dist) * trim;
-        const bx = b.x - (dx / dist) * trim;
-        const by = b.y - (dy / dist) * trim;
-
-        // Perpendicular offset for curve control point.
-        const perpX = -dy / dist;
-        const perpY = dx / dist;
-        const bow = Math.min(120, dist * 0.22);
-        const cx = (ax + bx) / 2 + perpX * bow;
-        const cy = (ay + by) / 2 + perpY * bow;
-
-        const path = `M ${ax} ${ay} Q ${cx} ${cy} ${bx} ${by}`;
-        const approxLen = Math.hypot(bx - ax, by - ay) + bow;
+        const path = `M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}`;
+        const approxLen = Math.hypot(dx, b.y - a.y) + handle * 1.5;
 
         return (
-          <g key={ref.id} style={{ animation: "ref-fade 2400ms ease-out forwards" }}>
+          <g
+            key={ref.id}
+            style={{
+              animation: "ref-fade 2400ms ease-out forwards",
+              color: fromAgent.accentColor,
+            }}
+          >
             <path
               d={path}
               fill="none"
               stroke={fromAgent.accentColor}
-              strokeWidth={1.5}
+              strokeOpacity={0.18}
+              strokeWidth={5}
+              strokeLinecap="round"
+            />
+            <path
+              d={path}
+              fill="none"
+              stroke={fromAgent.accentColor}
+              strokeWidth={1.6}
               strokeLinecap="round"
               markerEnd={`url(#ref-arrow-${ref.id})`}
               strokeDasharray={approxLen}
               strokeDashoffset={approxLen}
               style={{
                 animation: `ref-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
+              }}
+            />
+            <path
+              d={path}
+              fill="none"
+              stroke={fromAgent.accentColor}
+              strokeWidth={1.6}
+              strokeLinecap="round"
+              strokeDasharray="3 8"
+              strokeOpacity={0.85}
+              style={{
+                animation: "wire-flow 1.2s linear infinite",
+                animationDelay: "0.9s",
               }}
             />
           </g>
