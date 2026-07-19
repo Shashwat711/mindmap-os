@@ -49,7 +49,10 @@ function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
           ? ""
           : "bg-destructive";
   return (
-    <div className="flex items-start gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-[12px]">
+    <div
+      className="flex items-start gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-[12px]"
+      style={{ animation: "message-in 220ms ease-out" }}
+    >
       {call.status === "done" ? (
         <Check
           size={12}
@@ -233,13 +236,18 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
               <div
                 key={msg.id}
                 className="ml-6 whitespace-pre-wrap rounded-xl bg-foreground px-3.5 py-2.5 text-[13.5px] leading-relaxed text-background"
+                style={{ animation: "message-in 220ms ease-out" }}
               >
                 {msg.content}
               </div>
             );
           }
           return (
-            <div key={msg.id} className="mr-6 space-y-2">
+            <div
+              key={msg.id}
+              className="mr-6 space-y-2"
+              style={{ animation: "message-in 220ms ease-out" }}
+            >
               {msg.toolCalls && msg.toolCalls.length > 0 && (
                 <div className="space-y-1.5">
                   {msg.toolCalls.map((call) => (
@@ -248,7 +256,10 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
                 </div>
               )}
               {msg.content && (
-                <div className="whitespace-pre-wrap rounded-xl bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed text-foreground shadow-rest">
+                <div
+                  className="whitespace-pre-wrap rounded-xl bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed text-foreground shadow-rest"
+                  style={{ animation: "message-in 260ms ease-out" }}
+                >
                   {msg.content}
                 </div>
               )}
