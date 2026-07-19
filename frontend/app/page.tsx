@@ -5,6 +5,7 @@ import { Canvas } from "@/components/canvas/Canvas";
 import { AgentCard } from "@/components/canvas/AgentCard";
 import { ActivityLayer } from "@/components/canvas/ActivityLayer";
 import { ReferenceLines } from "@/components/canvas/ReferenceLines";
+import { ActivityTicker } from "@/components/canvas/ActivityTicker";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
@@ -18,6 +19,7 @@ import {
   DEMO_SEEN_KEY,
   seedDemoIfEmpty,
   type ReferenceBeat,
+  type TickerEvent,
 } from "@/lib/demo";
 import { useDemoRunner } from "@/lib/hooks/useDemoRunner";
 import { planToolCalls } from "@/lib/mock-responses";
@@ -93,6 +95,8 @@ export default function Home() {
   } | null>(null);
   const [unreadAgents, setUnreadAgents] = useState<Set<AgentId>>(new Set());
   const [activeRefs, setActiveRefs] = useState<ReferenceBeat[]>([]);
+  const [tickerEvents, setTickerEvents] = useState<TickerEvent[]>([]);
+  const [tickerStart, setTickerStart] = useState<number | null>(null);
   const [demoEnabled, setDemoEnabled] = useState(false);
 
   useEffect(() => {
@@ -117,6 +121,10 @@ export default function Home() {
       window.setTimeout(() => {
         setActiveRefs((prev) => prev.filter((r) => r.id !== ref.id));
       }, 2400);
+    },
+    onTicker: (event) => {
+      setTickerStart((prev) => prev ?? Date.now());
+      setTickerEvents((prev) => [...prev, event]);
     },
     onFinished: () => setDemoEnabled(false),
   });
@@ -212,7 +220,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex-1">
+      <div className="relative flex-1">
         <Canvas>
           {AGENTS.map((agent, i) => {
             const pos = positions[agent.id];
@@ -236,6 +244,7 @@ export default function Home() {
           <ActivityLayer activity={activity} positions={positions} />
           <ReferenceLines refs={activeRefs} positions={positions} />
         </Canvas>
+        <ActivityTicker events={tickerEvents} startTime={tickerStart} />
       </div>
 
       <ChatPanel
