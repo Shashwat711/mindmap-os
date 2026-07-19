@@ -38,9 +38,9 @@ export function StartupContextDialog({ open, initial, onSave, onSkip }: Props) {
   return (
     <Dialog.Root open={open} onOpenChange={(next) => { if (!next) onSkip(); }}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-background p-6 shadow-xl outline-none">
-          <Dialog.Title className="text-xl font-semibold tracking-tight">
+        <Dialog.Backdrop className="fixed inset-0 bg-foreground/40 backdrop-blur-[4px]" />
+        <Dialog.Popup className="fixed left-1/2 top-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[20px] bg-card p-6 shadow-raised outline-none">
+          <Dialog.Title className="text-lg font-semibold tracking-tight text-foreground">
             Tell your team about the startup
           </Dialog.Title>
           <Dialog.Description className="mt-1 text-sm text-muted-foreground">
@@ -49,50 +49,50 @@ export function StartupContextDialog({ open, initial, onSave, onSkip }: Props) {
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">The one-liner</span>
+              <span className="text-[13px] font-medium text-foreground">The one-liner</span>
               <textarea
                 required
                 value={idea}
                 onChange={(e) => setIdea(e.target.value)}
                 placeholder="A tool that lets solo founders spin up an AI cofounder team on a canvas."
                 rows={2}
-                className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+                className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[13.5px] leading-relaxed outline-none placeholder:text-muted-foreground/60 focus:border-ring focus:ring-2 focus:ring-ring/25"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">The problem, and who has it</span>
+              <span className="text-[13px] font-medium text-foreground">The problem, and who has it</span>
               <textarea
                 required
                 value={problem}
                 onChange={(e) => setProblem(e.target.value)}
                 placeholder="Solo founders stall in week one because they don't have a team to bounce ideas off."
                 rows={2}
-                className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+                className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[13.5px] leading-relaxed outline-none placeholder:text-muted-foreground/60 focus:border-ring focus:ring-2 focus:ring-ring/25"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">Your first customer</span>
+              <span className="text-[13px] font-medium text-foreground">Your first customer</span>
               <textarea
                 required
                 value={icp}
                 onChange={(e) => setIcp(e.target.value)}
                 placeholder="Technical solo founders on X/HN who've quit a job in the last six months to build something."
                 rows={2}
-                className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+                className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-[13.5px] leading-relaxed outline-none placeholder:text-muted-foreground/60 focus:border-ring focus:ring-2 focus:ring-ring/25"
               />
             </label>
 
             <fieldset className="space-y-2">
-              <legend className="text-sm font-medium">Where are you</legend>
+              <legend className="text-[13px] font-medium text-foreground">Where are you</legend>
               <div className="grid grid-cols-2 gap-2">
                 {STAGES.map((s) => (
                   <label
                     key={s.value}
-                    className={`flex cursor-pointer flex-col gap-0.5 rounded-lg border px-3 py-2 text-sm transition ${
+                    className={`flex cursor-pointer flex-col gap-0.5 rounded-md border px-3 py-2 text-sm transition-colors ${
                       stage === s.value
-                        ? "border-foreground bg-foreground/5"
+                        ? "border-foreground bg-foreground/[0.05]"
                         : "border-border hover:border-foreground/40"
                     }`}
                   >
@@ -104,8 +104,8 @@ export function StartupContextDialog({ open, initial, onSave, onSkip }: Props) {
                       onChange={() => setStage(s.value)}
                       className="sr-only"
                     />
-                    <span className="font-medium">{s.label}</span>
-                    <span className="text-xs text-muted-foreground">{s.hint}</span>
+                    <span className="text-[13.5px] font-medium text-foreground">{s.label}</span>
+                    <span className="text-[11.5px] text-muted-foreground">{s.hint}</span>
                   </label>
                 ))}
               </div>
@@ -115,13 +115,13 @@ export function StartupContextDialog({ open, initial, onSave, onSkip }: Props) {
               <button
                 type="button"
                 onClick={onSkip}
-                className="rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                className="rounded-md px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
               >
                 Skip for now
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/85"
+                className="rounded-md bg-foreground px-4 py-2 text-[13px] font-medium text-background transition-colors hover:bg-foreground/85"
               >
                 Save context
               </button>
