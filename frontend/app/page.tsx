@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "@/components/canvas/Canvas";
 import { AgentCard } from "@/components/canvas/AgentCard";
+import { ActivityLayer } from "@/components/canvas/ActivityLayer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { ConnectorDialog } from "@/components/settings/ConnectorDialog";
@@ -127,6 +128,7 @@ export default function Home() {
               />
             );
           })}
+          <ActivityLayer activity={activity} positions={positions} />
         </Canvas>
       </div>
 

@@ -169,7 +169,7 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
       });
     } finally {
       setSending(false);
-      onActivity?.(null);
+      setTimeout(() => onActivity?.(null), 600);
     }
   }
 
