@@ -9,8 +9,9 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { Agent, ChatMessage, StartupContext } from "@/lib/types";
+import type { Agent, ChatMessage, ModelConnector, StartupContext } from "@/lib/types";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
+import { sendMessage } from "@/lib/chat";
 
 const ICON_MAP: Record<string, typeof Telescope> = {
   Telescope,
@@ -23,10 +24,11 @@ const ICON_MAP: Record<string, typeof Telescope> = {
 interface Props {
   agent: Agent | null;
   context: StartupContext | null;
+  connector: ModelConnector | null;
   onClose: () => void;
 }
 
-export function ChatPanel({ agent, context, onClose }: Props) {
+export function ChatPanel({ agent, context, connector, onClose }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -61,7 +63,7 @@ export function ChatPanel({ agent, context, onClose }: Props) {
 
   const Icon = ICON_MAP[agent.icon] ?? Telescope;
 
-  function send() {
+  async function send() {
     if (!agent) return;
     const trimmed = draft.trim();
     if (!trimmed || sending) return;
@@ -79,20 +81,38 @@ export function ChatPanel({ agent, context, onClose }: Props) {
     setDraft("");
     setSending(true);
 
-    setTimeout(() => {
-      const stubMsg: ChatMessage = {
+    try {
+      const content = await sendMessage({
+        agent,
+        connector,
+        context,
+        history: messages,
+        message: trimmed,
+      });
+      const reply: ChatMessage = {
         id: crypto.randomUUID(),
         agentId: agent.id,
         role: "assistant",
-        content:
-          "No model is connected yet. Once a Connector is configured, I'll respond in character with your startup context in mind.",
+        content,
         createdAt: new Date().toISOString(),
       };
-      const withStub = [...withUser, stubMsg];
-      setMessages(withStub);
-      writeStorage(STORAGE_KEYS.chatHistory(agent.id), withStub);
+      const withReply = [...withUser, reply];
+      setMessages(withReply);
+      writeStorage(STORAGE_KEYS.chatHistory(agent.id), withReply);
+    } catch (err) {
+      const error: ChatMessage = {
+        id: crypto.randomUUID(),
+        agentId: agent.id,
+        role: "assistant",
+        content: err instanceof Error ? err.message : "Something went wrong.",
+        createdAt: new Date().toISOString(),
+      };
+      const withError = [...withUser, error];
+      setMessages(withError);
+      writeStorage(STORAGE_KEYS.chatHistory(agent.id), withError);
+    } finally {
       setSending(false);
-    }, 400);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {

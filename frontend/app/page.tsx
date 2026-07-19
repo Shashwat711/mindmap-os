@@ -121,6 +121,7 @@ export default function Home() {
       <ChatPanel
         agent={selectedAgent}
         context={context}
+        connector={connector}
         onClose={() => setSelectedAgent(null)}
       />
 
