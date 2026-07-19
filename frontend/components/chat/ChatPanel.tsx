@@ -20,6 +20,7 @@ import type {
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import { sendMessage } from "@/lib/chat";
 import { getToolById } from "@/lib/tools";
+import { StreamingText } from "./StreamingText";
 
 const ICON_MAP: Record<string, typeof Telescope> = {
   Telescope,
@@ -85,7 +86,17 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [streamingIds, setStreamingIds] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  function markDoneStreaming(id: string) {
+    setStreamingIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (!agent) {
@@ -148,6 +159,14 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
       });
       if (msg.role === "assistant") {
         onActivity?.({ agentId: capturedAgent.id, toolCalls: msg.toolCalls ?? [] });
+        if (msg.content) {
+          setStreamingIds((prev) => {
+            if (prev.has(msg.id)) return prev;
+            const next = new Set(prev);
+            next.add(msg.id);
+            return next;
+          });
+        }
       }
     }
 
@@ -260,7 +279,14 @@ export function ChatPanel({ agent, context, connector, onClose, onActivity }: Pr
                   className="whitespace-pre-wrap rounded-xl bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed text-foreground shadow-rest"
                   style={{ animation: "message-in 260ms ease-out" }}
                 >
-                  {msg.content}
+                  {streamingIds.has(msg.id) ? (
+                    <StreamingText
+                      text={msg.content}
+                      onDone={() => markDoneStreaming(msg.id)}
+                    />
+                  ) : (
+                    msg.content
+                  )}
                 </div>
               )}
             </div>
