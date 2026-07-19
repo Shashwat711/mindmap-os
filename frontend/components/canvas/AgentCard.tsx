@@ -7,13 +7,11 @@ import {
   Target,
   Telescope,
 } from "lucide-react";
-import { useRef, useState, type ComponentType, type SVGProps } from "react";
+import { useRef, useState } from "react";
 import type { Agent } from "@/lib/types";
 import { useCanvasScale } from "./Canvas";
 
-type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
-
-const ICON_MAP: Record<string, IconComponent> = {
+const ICON_MAP: Record<string, typeof Telescope> = {
   Telescope,
   ListChecks,
   Megaphone,
