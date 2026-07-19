@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export interface Workspace {
   id: string;
@@ -10,6 +11,12 @@ export interface Workspace {
 }
 
 const ACTIVE_KEY = "mindmap-os:active-workspace";
+
+const LOCAL_WORKSPACE: Workspace = {
+  id: "local",
+  name: "Local workspace",
+  createdAt: new Date(0).toISOString(),
+};
 
 interface WorkspaceRow {
   id: string;
@@ -22,11 +29,18 @@ function toWorkspace(row: WorkspaceRow): Workspace {
 }
 
 export function useWorkspace() {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeId, setActiveIdState] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const local = !isSupabaseConfigured();
+
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(
+    local ? [LOCAL_WORKSPACE] : [],
+  );
+  const [activeId, setActiveIdState] = useState<string | null>(
+    local ? LOCAL_WORKSPACE.id : null,
+  );
+  const [loading, setLoading] = useState(!local);
 
   const refresh = useCallback(async () => {
+    if (local) return;
     const supabase = createClient();
     const { data, error } = await supabase
       .from("workspaces")
@@ -51,21 +65,27 @@ export function useWorkspace() {
       window.localStorage.setItem(ACTIVE_KEY, nextActive);
     }
     setLoading(false);
-  }, []);
+  }, [local]);
 
   useEffect(() => {
+    if (local) return;
     void refresh();
-  }, [refresh]);
+  }, [refresh, local]);
 
-  const setActive = useCallback((id: string) => {
-    setActiveIdState(id);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(ACTIVE_KEY, id);
-    }
-  }, []);
+  const setActive = useCallback(
+    (id: string) => {
+      if (local) return;
+      setActiveIdState(id);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(ACTIVE_KEY, id);
+      }
+    },
+    [local],
+  );
 
   const create = useCallback(
     async (name: string): Promise<string> => {
+      if (local) return LOCAL_WORKSPACE.id;
       const supabase = createClient();
       const {
         data: { user },
@@ -83,11 +103,12 @@ export function useWorkspace() {
       setActive(data.id);
       return data.id;
     },
-    [refresh, setActive],
+    [local, refresh, setActive],
   );
 
   const rename = useCallback(
     async (id: string, name: string) => {
+      if (local) return;
       const supabase = createClient();
       const { error } = await supabase
         .from("workspaces")
@@ -96,17 +117,18 @@ export function useWorkspace() {
       if (error) throw error;
       await refresh();
     },
-    [refresh],
+    [local, refresh],
   );
 
   const remove = useCallback(
     async (id: string) => {
+      if (local) return;
       const supabase = createClient();
       const { error } = await supabase.from("workspaces").delete().eq("id", id);
       if (error) throw error;
       await refresh();
     },
-    [refresh],
+    [local, refresh],
   );
 
   const active = workspaces.find((w) => w.id === activeId) ?? null;

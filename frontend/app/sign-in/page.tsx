@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
 export default function SignInPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) router.replace("/");
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

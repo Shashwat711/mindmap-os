@@ -2,13 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import type { StartupContext, StartupStage } from "@/lib/types";
 
 export function useStartupContext(workspaceId: string | null) {
+  const local = !isSupabaseConfigured();
   const [context, setContext] = useState<StartupContext | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (local) {
+      setContext(readStorage<StartupContext>(STORAGE_KEYS.startupContext));
+      setLoading(false);
+      return;
+    }
     if (!workspaceId) {
       setContext(null);
       setLoading(false);
@@ -41,10 +49,15 @@ export function useStartupContext(workspaceId: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [workspaceId]);
+  }, [workspaceId, local]);
 
   const save = useCallback(
     async (next: StartupContext) => {
+      if (local) {
+        writeStorage(STORAGE_KEYS.startupContext, next);
+        setContext(next);
+        return;
+      }
       if (!workspaceId) return;
       const supabase = createClient();
       const { error } = await supabase.from("startup_contexts").upsert({
@@ -58,7 +71,7 @@ export function useStartupContext(workspaceId: string | null) {
       if (error) throw error;
       setContext(next);
     },
-    [workspaceId],
+    [workspaceId, local],
   );
 
   return { context, loading, save };

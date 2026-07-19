@@ -1,9 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 const PUBLIC_PREFIXES = ["/sign-in", "/auth"];
 
 export async function middleware(request: NextRequest) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
