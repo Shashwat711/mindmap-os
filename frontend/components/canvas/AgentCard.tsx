@@ -101,7 +101,9 @@ export function AgentCard({
         top: posY,
         borderLeftWidth: 4,
         borderLeftColor: agent.color,
-        animation: `card-appear 380ms ease-out ${index * 70}ms backwards`,
+        animation: working
+          ? `card-appear 380ms ease-out ${index * 70}ms backwards`
+          : `card-appear 380ms ease-out ${index * 70}ms backwards, card-breath ${5.2 + (index % 3) * 0.6}s ease-in-out ${1200 + index * 340}ms infinite`,
         boxShadow: selected
           ? `0 0 0 2px ${agent.accentColor}55, 0 4px 12px rgba(28, 25, 23, 0.08), 0 10px 30px rgba(28, 25, 23, 0.10)`
           : undefined,
