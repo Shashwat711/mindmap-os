@@ -84,7 +84,7 @@ export function Canvas({ children }: CanvasProps) {
         className="pointer-events-none absolute left-0 top-0 origin-top-left"
         style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
       >
-        <div className="pointer-events-auto">{children}</div>
+        {children}
       </div>
     </div>
   );

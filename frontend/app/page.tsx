@@ -2,9 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { Canvas } from "@/components/canvas/Canvas";
+import { AgentCard } from "@/components/canvas/AgentCard";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
+import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
-import type { StartupContext } from "@/lib/types";
+import type { AgentId, StartupContext } from "@/lib/types";
+
+const DEFAULT_POSITIONS: Record<AgentId, { x: number; y: number }> = {
+  researcher: { x: 80, y: 100 },
+  pm: { x: 420, y: 60 },
+  cmo: { x: 760, y: 120 },
+  "lead-gen": { x: 200, y: 380 },
+  brand: { x: 580, y: 400 },
+};
 
 export default function Home() {
   const [context, setContext] = useState<StartupContext | null>(null);
@@ -42,7 +52,12 @@ export default function Home() {
       </header>
 
       <div className="flex-1">
-        <Canvas>{/* agent cards render here */}</Canvas>
+        <Canvas>
+          {AGENTS.map((agent) => {
+            const pos = DEFAULT_POSITIONS[agent.id];
+            return <AgentCard key={agent.id} agent={agent} x={pos.x} y={pos.y} />;
+          })}
+        </Canvas>
       </div>
 
       <StartupContextDialog
