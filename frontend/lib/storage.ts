@@ -28,4 +28,6 @@ export const STORAGE_KEYS = {
   cardPositions: "card-positions",
   chatHistory: (agentId: string) => `chat:${agentId}`,
   connector: "model-connector",
+  toolKeys: "tool-keys",
+  mcpConnections: "mcp-connections",
 } as const;

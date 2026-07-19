@@ -6,12 +6,13 @@ import { AgentCard } from "@/components/canvas/AgentCard";
 import { ActivityLayer } from "@/components/canvas/ActivityLayer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
-import { ConnectorDialog } from "@/components/settings/ConnectorDialog";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import type {
   Agent,
   AgentId,
+  McpConnection,
   ModelConnector,
   StartupContext,
   ToolCall,
@@ -35,8 +36,10 @@ function connectorLabel(connector: ModelConnector | null): string {
 export default function Home() {
   const [context, setContext] = useState<StartupContext | null>(null);
   const [contextDialogOpen, setContextDialogOpen] = useState(false);
-  const [connectorDialogOpen, setConnectorDialogOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [connector, setConnector] = useState<ModelConnector | null>(null);
+  const [toolKeys, setToolKeys] = useState<Record<string, string>>({});
+  const [mcpConnections, setMcpConnections] = useState<McpConnection[]>([]);
   const [positions, setPositions] = useState<Positions>(DEFAULT_POSITIONS);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [activity, setActivity] = useState<{
@@ -56,6 +59,12 @@ export default function Home() {
     const storedConnector = readStorage<ModelConnector>(STORAGE_KEYS.connector);
     setConnector(storedConnector);
 
+    const storedToolKeys = readStorage<Record<string, string>>(STORAGE_KEYS.toolKeys);
+    if (storedToolKeys) setToolKeys(storedToolKeys);
+
+    const storedMcp = readStorage<McpConnection[]>(STORAGE_KEYS.mcpConnections);
+    if (storedMcp) setMcpConnections(storedMcp);
+
     setHydrated(true);
   }, []);
 
@@ -68,7 +77,16 @@ export default function Home() {
   function handleSaveConnector(next: ModelConnector) {
     writeStorage(STORAGE_KEYS.connector, next);
     setConnector(next);
-    setConnectorDialogOpen(false);
+  }
+
+  function handleSaveToolKeys(next: Record<string, string>) {
+    writeStorage(STORAGE_KEYS.toolKeys, next);
+    setToolKeys(next);
+  }
+
+  function handleSaveMcp(next: McpConnection[]) {
+    writeStorage(STORAGE_KEYS.mcpConnections, next);
+    setMcpConnections(next);
   }
 
   function handleDragEnd(agent: Agent, x: number, y: number) {
@@ -90,7 +108,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setConnectorDialogOpen(true)}
+            onClick={() => setSettingsOpen(true)}
             className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             <span
@@ -147,11 +165,15 @@ export default function Home() {
         onSkip={() => setContextDialogOpen(false)}
       />
 
-      <ConnectorDialog
-        open={connectorDialogOpen}
-        initial={connector}
-        onSave={handleSaveConnector}
-        onClose={() => setConnectorDialogOpen(false)}
+      <SettingsPanel
+        open={settingsOpen}
+        initialConnector={connector}
+        initialToolKeys={toolKeys}
+        initialMcp={mcpConnections}
+        onSaveConnector={handleSaveConnector}
+        onSaveToolKeys={handleSaveToolKeys}
+        onSaveMcp={handleSaveMcp}
+        onClose={() => setSettingsOpen(false)}
       />
     </main>
   );
