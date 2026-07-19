@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
 
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/";
+  const next = url.searchParams.get("next") ?? "/workspace";
 
   if (code) {
     const supabase = createClient();

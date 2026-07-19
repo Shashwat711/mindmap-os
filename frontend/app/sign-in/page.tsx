@@ -14,7 +14,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) router.replace("/");
+    if (!isSupabaseConfigured()) router.replace("/workspace");
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {

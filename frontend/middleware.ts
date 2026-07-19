@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 const PUBLIC_PREFIXES = ["/sign-in", "/auth", "/demo"];
+const PUBLIC_EXACT = ["/"];
 
 export async function middleware(request: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -37,7 +38,9 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+  const isPublic =
+    PUBLIC_EXACT.includes(path) ||
+    PUBLIC_PREFIXES.some((p) => path.startsWith(p));
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
@@ -47,7 +50,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && path === "/sign-in") {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/workspace";
     return NextResponse.redirect(url);
   }
 
