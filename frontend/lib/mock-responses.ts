@@ -4,6 +4,94 @@ function summarize(context: StartupContext | null): string {
   return context?.idea?.trim() || "your startup";
 }
 
+function trim(msg: string, max = 42): string {
+  return msg.length > max ? `${msg.slice(0, max)}...` : msg;
+}
+
+interface ToolPlanSpec {
+  toolId: string;
+  summary: (msg: string, ctx: StartupContext | null) => string;
+  result: (msg: string, ctx: StartupContext | null) => string;
+}
+
+const AGENT_TOOL_PLANS: Record<AgentId, ToolPlanSpec[]> = {
+  researcher: [
+    {
+      toolId: "web-search",
+      summary: (msg) => `Searching for "${trim(msg)}"`,
+      result: () => "12 relevant results across YC, Product Hunt, and X",
+    },
+    {
+      toolId: "competitor-scan",
+      summary: () => "Scanning three competitor sites",
+      result: () => "Cataloged pricing, ICP language, and hero copy",
+    },
+  ],
+  pm: [
+    {
+      toolId: "roadmap-writer",
+      summary: (_msg, ctx) => `Drafting 30-day roadmap for ${summarize(ctx)}`,
+      result: () => "4 weekly milestones, 12 candidate tickets",
+    },
+  ],
+  cmo: [
+    {
+      toolId: "landing-analyzer",
+      summary: () => "Analyzing top-3 landing pages in your category",
+      result: () => "5 reusable headline patterns identified",
+    },
+    {
+      toolId: "copy-tester",
+      summary: () => "Generating 4 headline variants for A/B",
+      result: () => "2 direct, 2 curiosity-driven",
+    },
+  ],
+  "lead-gen": [
+    {
+      toolId: "apollo-search",
+      summary: (_msg, ctx) =>
+        `Apollo search: ${ctx?.icp ? trim(ctx.icp, 32) : "your ICP"}`,
+      result: () => "247 people at 89 companies. Verified emails: 71%",
+    },
+    {
+      toolId: "linkedin-scan",
+      summary: () => "Enriching prospects from LinkedIn Sales Nav",
+      result: () => "50 profiles with recent activity signals",
+    },
+  ],
+  brand: [
+    {
+      toolId: "domain-check",
+      summary: () => "Checking .com, .app, .xyz for candidates",
+      result: () => "3 of 5 candidates have .com available",
+    },
+    {
+      toolId: "trademark-check",
+      summary: () => "USPTO + WIPO search across relevant classes",
+      result: () => "No conflicting marks in class 42 (software)",
+    },
+  ],
+};
+
+export interface PlannedToolCall {
+  toolId: string;
+  summary: string;
+  result: string;
+}
+
+export function planToolCalls(
+  agentId: AgentId,
+  message: string,
+  context: StartupContext | null,
+): PlannedToolCall[] {
+  const plans = AGENT_TOOL_PLANS[agentId] ?? [];
+  return plans.map((p) => ({
+    toolId: p.toolId,
+    summary: p.summary(message, context),
+    result: p.result(message, context),
+  }));
+}
+
 const MOCKS: Record<AgentId, (msg: string, ctx: StartupContext | null) => string> = {
   researcher: (_msg, ctx) => `Before I dig in, a question: when you say "${summarize(ctx)}", are we talking B2B or B2C first? Different competitors show up either way.
 

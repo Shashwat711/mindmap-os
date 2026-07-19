@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Check,
   ListChecks,
   Megaphone,
   Palette,
@@ -9,9 +10,16 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { Agent, ChatMessage, ModelConnector, StartupContext } from "@/lib/types";
+import type {
+  Agent,
+  ChatMessage,
+  ModelConnector,
+  StartupContext,
+  ToolCall,
+} from "@/lib/types";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import { sendMessage } from "@/lib/chat";
+import { getToolById } from "@/lib/tools";
 
 const ICON_MAP: Record<string, typeof Telescope> = {
   Telescope,
@@ -26,6 +34,47 @@ interface Props {
   context: StartupContext | null;
   connector: ModelConnector | null;
   onClose: () => void;
+}
+
+function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
+  const tool = getToolById(call.toolId);
+  const label = tool?.name ?? call.toolId;
+  const dotClass =
+    call.status === "pending"
+      ? "border border-border"
+      : call.status === "running"
+        ? "animate-pulse"
+        : call.status === "done"
+          ? ""
+          : "bg-destructive";
+  return (
+    <div className="flex items-start gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-[12px]">
+      {call.status === "done" ? (
+        <Check
+          size={12}
+          strokeWidth={2.5}
+          className="mt-[3px] shrink-0"
+          style={{ color: accent }}
+        />
+      ) : (
+        <span
+          className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${dotClass}`}
+          style={call.status === "running" ? { backgroundColor: accent } : undefined}
+        />
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {label}
+          </span>
+        </div>
+        <div className="mt-0.5 text-[12.5px] text-foreground/85">{call.summary}</div>
+        {call.status === "done" && call.result && (
+          <div className="mt-0.5 text-[11.5px] text-muted-foreground">{call.result}</div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function ChatPanel({ agent, context, connector, onClose }: Props) {
@@ -48,7 +97,7 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages.length]);
+  }, [messages]);
 
   useEffect(() => {
     if (!agent) return;
@@ -68,48 +117,51 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
     const trimmed = draft.trim();
     if (!trimmed || sending) return;
 
+    const capturedAgent = agent;
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
-      agentId: agent.id,
+      agentId: capturedAgent.id,
       role: "user",
       content: trimmed,
       createdAt: new Date().toISOString(),
     };
     const withUser = [...messages, userMsg];
     setMessages(withUser);
-    writeStorage(STORAGE_KEYS.chatHistory(agent.id), withUser);
+    writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id), withUser);
     setDraft("");
     setSending(true);
 
-    try {
-      const content = await sendMessage({
-        agent,
-        connector,
-        context,
-        history: messages,
-        message: trimmed,
+    function upsert(msg: ChatMessage) {
+      setMessages((prev) => {
+        const existing = prev.findIndex((m) => m.id === msg.id);
+        const next =
+          existing >= 0
+            ? prev.map((m, i) => (i === existing ? msg : m))
+            : [...prev, msg];
+        writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id), next);
+        return next;
       });
-      const reply: ChatMessage = {
-        id: crypto.randomUUID(),
-        agentId: agent.id,
-        role: "assistant",
-        content,
-        createdAt: new Date().toISOString(),
-      };
-      const withReply = [...withUser, reply];
-      setMessages(withReply);
-      writeStorage(STORAGE_KEYS.chatHistory(agent.id), withReply);
+    }
+
+    try {
+      await sendMessage(
+        {
+          agent: capturedAgent,
+          connector,
+          context,
+          history: messages,
+          message: trimmed,
+        },
+        upsert,
+      );
     } catch (err) {
-      const error: ChatMessage = {
+      upsert({
         id: crypto.randomUUID(),
-        agentId: agent.id,
+        agentId: capturedAgent.id,
         role: "assistant",
         content: err instanceof Error ? err.message : "Something went wrong.",
         createdAt: new Date().toISOString(),
-      };
-      const withError = [...withUser, error];
-      setMessages(withError);
-      writeStorage(STORAGE_KEYS.chatHistory(agent.id), withError);
+      });
     } finally {
       setSending(false);
     }
@@ -121,6 +173,10 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
       send();
     }
   }
+
+  const lastMessage = messages[messages.length - 1];
+  const waitingForFirstAssistant =
+    sending && (!lastMessage || lastMessage.role === "user");
 
   return (
     <aside
@@ -165,19 +221,35 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
             )}
           </div>
         )}
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`whitespace-pre-wrap rounded-xl px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
-              msg.role === "user"
-                ? "ml-6 bg-foreground text-background"
-                : "mr-6 bg-card text-foreground shadow-rest"
-            }`}
-          >
-            {msg.content}
-          </div>
-        ))}
-        {sending && (
+        {messages.map((msg) => {
+          if (msg.role === "user") {
+            return (
+              <div
+                key={msg.id}
+                className="ml-6 whitespace-pre-wrap rounded-xl bg-foreground px-3.5 py-2.5 text-[13.5px] leading-relaxed text-background"
+              >
+                {msg.content}
+              </div>
+            );
+          }
+          return (
+            <div key={msg.id} className="mr-6 space-y-2">
+              {msg.toolCalls && msg.toolCalls.length > 0 && (
+                <div className="space-y-1.5">
+                  {msg.toolCalls.map((call) => (
+                    <ToolCallChip key={call.id} call={call} accent={agent.accentColor} />
+                  ))}
+                </div>
+              )}
+              {msg.content && (
+                <div className="whitespace-pre-wrap rounded-xl bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed text-foreground shadow-rest">
+                  {msg.content}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {waitingForFirstAssistant && (
           <div className="mr-6 flex gap-1 rounded-xl bg-card px-3.5 py-3 shadow-rest">
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/70 [animation-delay:-0.3s]" />
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/70 [animation-delay:-0.15s]" />
