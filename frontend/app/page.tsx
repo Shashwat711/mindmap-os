@@ -11,6 +11,8 @@ import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import { useWorkspace } from "@/lib/hooks/useWorkspace";
 import { useStartupContext } from "@/lib/hooks/useStartupContext";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { seedDemoIfEmpty } from "@/lib/demo";
 import type {
   Agent,
   AgentId,
@@ -19,6 +21,15 @@ import type {
   StartupContext,
   ToolCall,
 } from "@/lib/types";
+
+if (typeof window !== "undefined" && !isSupabaseConfigured()) {
+  seedDemoIfEmpty(
+    () => readStorage<StartupContext>(STORAGE_KEYS.startupContext) !== null,
+    (ctx) => writeStorage(STORAGE_KEYS.startupContext, ctx),
+    (agentId) => readStorage(STORAGE_KEYS.chatHistory(agentId)) !== null,
+    (agentId, msgs) => writeStorage(STORAGE_KEYS.chatHistory(agentId), msgs),
+  );
+}
 
 type Positions = Record<AgentId, { x: number; y: number }>;
 
