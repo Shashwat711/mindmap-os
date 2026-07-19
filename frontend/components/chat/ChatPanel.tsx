@@ -38,17 +38,45 @@ interface Props {
   onActivity?: (activity: { agentId: Agent["id"]; toolCalls: ToolCall[] } | null) => void;
 }
 
-function SourcePill({ source, accent }: { source: { domain: string }; accent: string }) {
+const MONOGRAM_PALETTE = [
+  "#8a5a3b", // terracotta
+  "#5b6b3a", // olive
+  "#9b6f2a", // brass
+  "#3b607a", // denim
+  "#7a3b5b", // plum
+  "#4b6b5b", // sage
+  "#8a4a3b", // rust
+  "#5a4b7a", // muted violet
+];
+
+function monogramColor(domain: string): string {
+  let hash = 0;
+  for (let i = 0; i < domain.length; i++) {
+    hash = (hash * 31 + domain.charCodeAt(i)) | 0;
+  }
+  return MONOGRAM_PALETTE[Math.abs(hash) % MONOGRAM_PALETTE.length];
+}
+
+function initialOf(domain: string): string {
+  const bare = domain.replace(/^www\./, "");
+  return (bare[0] ?? "?").toUpperCase();
+}
+
+function SourcePill({ source }: { source: { domain: string } }) {
+  const color = monogramColor(source.domain);
+  const letter = initialOf(source.domain);
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[10.5px] text-foreground/80"
+      className="inline-flex items-center gap-1.5 rounded border border-border bg-background/60 py-0.5 pl-0.5 pr-1.5 font-mono text-[10.5px] text-foreground/85"
       style={{ animation: "message-in 260ms ease-out" }}
     >
       <span
         aria-hidden
-        className="h-1.5 w-1.5 shrink-0 rounded-[1px]"
-        style={{ backgroundColor: accent }}
-      />
+        className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] font-sans text-[9px] font-semibold leading-none text-background"
+        style={{ backgroundColor: color }}
+      >
+        {letter}
+      </span>
       {source.domain}
     </span>
   );
@@ -130,7 +158,7 @@ function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
       {done && call.sources && call.sources.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5 pl-5">
           {call.sources.map((source, i) => (
-            <SourcePill key={`${source.domain}-${i}`} source={source} accent={accent} />
+            <SourcePill key={`${source.domain}-${i}`} source={source} />
           ))}
         </div>
       )}
