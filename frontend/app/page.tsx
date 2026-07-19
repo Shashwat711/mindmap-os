@@ -9,6 +9,8 @@ import { StartupContextDialog } from "@/components/onboarding/StartupContextDial
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
+import { useWorkspace } from "@/lib/hooks/useWorkspace";
+import { useStartupContext } from "@/lib/hooks/useStartupContext";
 import type {
   Agent,
   AgentId,
@@ -34,7 +36,13 @@ function connectorLabel(connector: ModelConnector | null): string {
 }
 
 export default function Home() {
-  const [context, setContext] = useState<StartupContext | null>(null);
+  const { activeId, loading: workspaceLoading } = useWorkspace();
+  const {
+    context,
+    loading: contextLoading,
+    save: saveContext,
+  } = useStartupContext(activeId);
+
   const [contextDialogOpen, setContextDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [connector, setConnector] = useState<ModelConnector | null>(null);
@@ -46,13 +54,8 @@ export default function Home() {
     agentId: AgentId;
     toolCalls: ToolCall[];
   } | null>(null);
-  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const storedContext = readStorage<StartupContext>(STORAGE_KEYS.startupContext);
-    setContext(storedContext);
-    setContextDialogOpen(storedContext === null);
-
     const storedPositions = readStorage<Positions>(STORAGE_KEYS.cardPositions);
     if (storedPositions) setPositions({ ...DEFAULT_POSITIONS, ...storedPositions });
 
@@ -64,13 +67,15 @@ export default function Home() {
 
     const storedMcp = readStorage<McpConnection[]>(STORAGE_KEYS.mcpConnections);
     if (storedMcp) setMcpConnections(storedMcp);
-
-    setHydrated(true);
   }, []);
 
-  function handleSaveContext(next: StartupContext) {
-    writeStorage(STORAGE_KEYS.startupContext, next);
-    setContext(next);
+  useEffect(() => {
+    if (workspaceLoading || contextLoading) return;
+    if (!context) setContextDialogOpen(true);
+  }, [workspaceLoading, contextLoading, context]);
+
+  async function handleSaveContext(next: StartupContext) {
+    await saveContext(next);
     setContextDialogOpen(false);
   }
 
@@ -118,7 +123,7 @@ export default function Home() {
             />
             {connectorLabel(connector)}
           </button>
-          {hydrated && context && (
+          {context && (
             <button
               onClick={() => setContextDialogOpen(true)}
               className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"

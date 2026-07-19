@@ -24,7 +24,6 @@ export function clearStorage(name: string): void {
 }
 
 export const STORAGE_KEYS = {
-  startupContext: "startup-context",
   cardPositions: "card-positions",
   chatHistory: (agentId: string) => `chat:${agentId}`,
   connector: "model-connector",
