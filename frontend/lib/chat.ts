@@ -13,6 +13,7 @@ export async function sendMessage({
   agent,
   connector,
   context,
+  history,
   message,
 }: SendParams): Promise<string> {
   const provider = connector?.provider ?? "mock";
@@ -22,7 +23,27 @@ export async function sendMessage({
     return generateMockResponse(agent.id, message, context);
   }
 
-  throw new Error(
-    `Provider "${provider}" is not wired up yet. Switch to Mock mode or wait for the next commit.`,
-  );
+  if (!connector?.apiKey) {
+    throw new Error("No API key configured. Open the connector settings.");
+  }
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      provider,
+      apiKey: connector.apiKey,
+      model: connector.model,
+      systemPrompt: agent.systemPrompt,
+      context,
+      history: history.map((h) => ({ role: h.role, content: h.content })),
+      message,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.error ?? `Request failed (${res.status})`);
+  }
+  return data.content;
 }
