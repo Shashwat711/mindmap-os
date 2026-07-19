@@ -34,6 +34,7 @@ interface Props {
   context: StartupContext | null;
   connector: ModelConnector | null;
   onClose: () => void;
+  onActivity?: (activity: { agentId: Agent["id"]; toolCalls: ToolCall[] } | null) => void;
 }
 
 function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
@@ -77,7 +78,7 @@ function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
   );
 }
 
-export function ChatPanel({ agent, context, connector, onClose }: Props) {
+export function ChatPanel({ agent, context, connector, onClose, onActivity }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -130,6 +131,7 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
     writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id), withUser);
     setDraft("");
     setSending(true);
+    onActivity?.({ agentId: capturedAgent.id, toolCalls: [] });
 
     function upsert(msg: ChatMessage) {
       setMessages((prev) => {
@@ -141,6 +143,9 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
         writeStorage(STORAGE_KEYS.chatHistory(capturedAgent.id), next);
         return next;
       });
+      if (msg.role === "assistant") {
+        onActivity?.({ agentId: capturedAgent.id, toolCalls: msg.toolCalls ?? [] });
+      }
     }
 
     try {
@@ -164,6 +169,7 @@ export function ChatPanel({ agent, context, connector, onClose }: Props) {
       });
     } finally {
       setSending(false);
+      onActivity?.(null);
     }
   }
 

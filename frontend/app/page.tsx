@@ -8,7 +8,13 @@ import { StartupContextDialog } from "@/components/onboarding/StartupContextDial
 import { ConnectorDialog } from "@/components/settings/ConnectorDialog";
 import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
-import type { Agent, AgentId, ModelConnector, StartupContext } from "@/lib/types";
+import type {
+  Agent,
+  AgentId,
+  ModelConnector,
+  StartupContext,
+  ToolCall,
+} from "@/lib/types";
 
 type Positions = Record<AgentId, { x: number; y: number }>;
 
@@ -32,6 +38,10 @@ export default function Home() {
   const [connector, setConnector] = useState<ModelConnector | null>(null);
   const [positions, setPositions] = useState<Positions>(DEFAULT_POSITIONS);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [activity, setActivity] = useState<{
+    agentId: AgentId;
+    toolCalls: ToolCall[];
+  } | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -104,12 +114,14 @@ export default function Home() {
         <Canvas>
           {AGENTS.map((agent) => {
             const pos = positions[agent.id];
+            const working = activity?.agentId === agent.id;
             return (
               <AgentCard
                 key={agent.id}
                 agent={agent}
                 x={pos.x}
                 y={pos.y}
+                working={working}
                 onDragEnd={handleDragEnd}
                 onClick={setSelectedAgent}
               />
@@ -123,6 +135,7 @@ export default function Home() {
         context={context}
         connector={connector}
         onClose={() => setSelectedAgent(null)}
+        onActivity={setActivity}
       />
 
       <StartupContextDialog

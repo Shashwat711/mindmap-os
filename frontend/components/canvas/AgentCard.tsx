@@ -23,11 +23,12 @@ interface Props {
   agent: Agent;
   x: number;
   y: number;
+  working?: boolean;
   onClick?: (agent: Agent) => void;
   onDragEnd?: (agent: Agent, x: number, y: number) => void;
 }
 
-export function AgentCard({ agent, x, y, onClick, onDragEnd }: Props) {
+export function AgentCard({ agent, x, y, working, onClick, onDragEnd }: Props) {
   const Icon = ICON_MAP[agent.icon] ?? Telescope;
   const scale = useCanvasScale();
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
@@ -84,7 +85,28 @@ export function AgentCard({ agent, x, y, onClick, onDragEnd }: Props) {
       className="pointer-events-auto absolute w-[280px] cursor-grab select-none rounded-2xl border border-border bg-card p-4 shadow-rest transition-shadow duration-150 hover:shadow-raised active:cursor-grabbing"
       style={{ left: posX, top: posY, borderLeftWidth: 4, borderLeftColor: agent.color }}
     >
-      <div className="flex items-start gap-3">
+      {working && (
+        <>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              boxShadow: `0 0 0 3px ${agent.accentColor}`,
+              animation: "card-pulse-ring 1.8s ease-out infinite",
+            }}
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              boxShadow: `0 0 0 3px ${agent.accentColor}`,
+              animation: "card-pulse-ring 1.8s ease-out infinite",
+              animationDelay: "0.6s",
+            }}
+          />
+        </>
+      )}
+      <div className="relative flex items-start gap-3">
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
           style={{ backgroundColor: `${agent.color}1F`, color: agent.color }}
@@ -100,7 +122,7 @@ export function AgentCard({ agent, x, y, onClick, onDragEnd }: Props) {
           </div>
         </div>
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-card-foreground/85">
+      <p className="relative mt-3 text-[13px] leading-relaxed text-card-foreground/85">
         {agent.description}
       </p>
     </div>
