@@ -35,7 +35,18 @@ You can either bring your own model API key (Anthropic or OpenAI) via the in-app
 - **Next.js 14** (App Router) + **React 18** + **TypeScript 5**
 - **Tailwind CSS 3** + **shadcn/ui** on top of **Base UI**
 - **Geist** typeface family
-- **[stitch-skills](https://github.com/google-labs-code/stitch-skills)** — Google Labs Agent Skills for the design workflow, backed by [Stitch](https://stitch.withgoogle.com)
+
+## Design workflow
+
+The visual language is defined once in [`.stitch/DESIGN.md`](./.stitch/DESIGN.md) — palette, typography, spacing, component patterns, voice. That file is the source of truth. When a new screen is needed, it gets generated against `DESIGN.md` rather than freehand, so the app stays consistent as it grows.
+
+Design generation and code sync go through **[stitch-skills](https://github.com/google-labs-code/stitch-skills)** — a bundle of Agent Skills from Google Labs that talk to [Stitch](https://stitch.withgoogle.com):
+
+- `stitch::manage-design-system` — uploads `DESIGN.md` and applies it across screens.
+- `stitch::generate-design` — generates or edits screens against the system.
+- `stitch::react-components` — syncs finalized screens back into `frontend/` as React components.
+
+The design system in `DESIGN.md` is also readable on its own — you don't need Stitch installed to understand the visual direction.
 
 ## Status
 
