@@ -38,13 +38,13 @@ export function ReferenceLines({ refs, positions }: Props) {
               viewBox="0 0 10 10"
               refX="8"
               refY="5"
-              markerWidth="6"
-              markerHeight="6"
+              markerWidth="5"
+              markerHeight="5"
               orient="auto"
             >
               <path
                 d="M0,0 L10,5 L0,10 Z"
-                fill={fromAgent?.accentColor ?? "#1c1917"}
+                fill={fromAgent?.accentColor ?? "#a3a3a3"}
               />
             </marker>
           );
@@ -71,48 +71,31 @@ export function ReferenceLines({ refs, positions }: Props) {
         const c2x = toSide === "left" ? b.x - handle : b.x + handle;
 
         const path = `M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}`;
-        const approxLen = Math.hypot(dx, b.y - a.y) + handle * 1.5;
+        const accent = fromAgent.accentColor;
 
         return (
           <g
             key={ref.id}
-            style={{
-              animation: "ref-fade 2400ms ease-out forwards",
-              color: fromAgent.accentColor,
-            }}
+            style={{ animation: "ref-fade 2400ms ease-out forwards" }}
           >
             <path
               d={path}
               fill="none"
-              stroke={fromAgent.accentColor}
-              strokeOpacity={0.18}
-              strokeWidth={5}
+              stroke={accent}
+              strokeOpacity={0.14}
+              strokeWidth={4}
               strokeLinecap="round"
             />
             <path
               d={path}
               fill="none"
-              stroke={fromAgent.accentColor}
-              strokeWidth={1.6}
+              stroke={accent}
+              strokeWidth={1.4}
               strokeLinecap="round"
+              strokeDasharray="4 6"
               markerEnd={`url(#ref-arrow-${ref.id})`}
-              strokeDasharray={approxLen}
-              strokeDashoffset={approxLen}
               style={{
-                animation: `ref-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
-              }}
-            />
-            <path
-              d={path}
-              fill="none"
-              stroke={fromAgent.accentColor}
-              strokeWidth={1.6}
-              strokeLinecap="round"
-              strokeDasharray="3 8"
-              strokeOpacity={0.85}
-              style={{
-                animation: "wire-flow 1.2s linear infinite",
-                animationDelay: "0.9s",
+                animation: "wire-flow 0.9s linear infinite",
               }}
             />
           </g>
