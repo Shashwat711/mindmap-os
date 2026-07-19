@@ -12,7 +12,9 @@ import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import { useWorkspace } from "@/lib/hooks/useWorkspace";
 import { useStartupContext } from "@/lib/hooks/useStartupContext";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { seedDemoIfEmpty } from "@/lib/demo";
+import { DEMO_CONTEXT, DEMO_SEEN_KEY, seedDemoIfEmpty } from "@/lib/demo";
+import { useDemoRunner } from "@/lib/hooks/useDemoRunner";
+import { planToolCalls } from "@/lib/mock-responses";
 import type {
   Agent,
   AgentId,
@@ -46,6 +48,24 @@ function connectorLabel(connector: ModelConnector | null): string {
   return connector.provider === "anthropic" ? "Anthropic" : "OpenAI";
 }
 
+function synthesizeActivity(agentId: AgentId): {
+  agentId: AgentId;
+  toolCalls: ToolCall[];
+} {
+  const plans = planToolCalls(agentId, "", DEMO_CONTEXT);
+  const now = new Date().toISOString();
+  return {
+    agentId,
+    toolCalls: plans.map((p, i) => ({
+      id: `demo-${agentId}-${p.toolId}-${i}`,
+      toolId: p.toolId,
+      status: "running" as const,
+      summary: p.summary,
+      startedAt: now,
+    })),
+  };
+}
+
 export default function Home() {
   const { activeId, loading: workspaceLoading } = useWorkspace();
   const {
@@ -66,6 +86,27 @@ export default function Home() {
     toolCalls: ToolCall[];
   } | null>(null);
   const [unreadAgents, setUnreadAgents] = useState<Set<AgentId>>(new Set());
+  const [demoEnabled, setDemoEnabled] = useState(false);
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) return;
+    if (typeof window === "undefined") return;
+    if (window.localStorage.getItem(DEMO_SEEN_KEY)) return;
+    setDemoEnabled(true);
+  }, []);
+
+  useDemoRunner(demoEnabled, {
+    onActive: (agentId) =>
+      setActivity(agentId ? synthesizeActivity(agentId) : null),
+    onBadge: (agentId) =>
+      setUnreadAgents((prev) => {
+        if (prev.has(agentId)) return prev;
+        const next = new Set(prev);
+        next.add(agentId);
+        return next;
+      }),
+    onFinished: () => setDemoEnabled(false),
+  });
 
   function selectAgent(agent: Agent | null) {
     setSelectedAgent(agent);
