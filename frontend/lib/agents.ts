@@ -18,6 +18,7 @@ You push back when the founder confuses signal with noise. You cite where a numb
     color: "#0f766e",
     accentColor: "#14b8a6",
     icon: "Telescope",
+    toolIds: ["web-search", "apify-scraper", "competitor-scan"],
   },
   {
     id: "pm",
@@ -36,6 +37,7 @@ You are allergic to feature creep. When the founder pitches you a shiny new capa
     color: "#c2410c",
     accentColor: "#f97316",
     icon: "ListChecks",
+    toolIds: ["roadmap-writer"],
   },
   {
     id: "cmo",
@@ -55,6 +57,7 @@ You are ruthless about jargon and generic AI-app language. If the copy sounds li
     color: "#be185d",
     accentColor: "#ec4899",
     icon: "Megaphone",
+    toolIds: ["landing-analyzer", "copy-tester", "web-search"],
   },
   {
     id: "lead-gen",
@@ -73,6 +76,7 @@ You are pragmatic and tactical. You'd rather send 30 well-researched emails than
     color: "#365314",
     accentColor: "#84cc16",
     icon: "Target",
+    toolIds: ["apollo-search", "linkedin-scan", "apify-scraper"],
   },
   {
     id: "brand",
@@ -92,6 +96,7 @@ You are opinionated. You reference specific brands (Linear, Retool, Vercel, Noti
     color: "#6b21a8",
     accentColor: "#a855f7",
     icon: "Palette",
+    toolIds: ["domain-check", "trademark-check", "web-search"],
   },
 ];
 
