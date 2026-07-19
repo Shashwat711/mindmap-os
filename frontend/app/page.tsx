@@ -15,14 +15,13 @@ import { useWorkspace } from "@/lib/hooks/useWorkspace";
 import { useStartupContext } from "@/lib/hooks/useStartupContext";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import {
-  DEMO_CONTEXT,
   DEMO_SEEN_KEY,
+  buildDemoActivity,
   seedDemoIfEmpty,
   type ReferenceBeat,
   type TickerEvent,
 } from "@/lib/demo";
 import { useDemoRunner } from "@/lib/hooks/useDemoRunner";
-import { planToolCalls } from "@/lib/mock-responses";
 import type {
   Agent,
   AgentId,
@@ -60,18 +59,9 @@ function synthesizeActivity(agentId: AgentId): {
   agentId: AgentId;
   toolCalls: ToolCall[];
 } {
-  const plans = planToolCalls(agentId, "", DEMO_CONTEXT);
-  const now = new Date().toISOString();
   return {
     agentId,
-    toolCalls: plans.map((p, i) => ({
-      id: `demo-${agentId}-${p.toolId}-${i}`,
-      toolId: p.toolId,
-      status: "running" as const,
-      summary: p.summary,
-      fetchUrl: p.fetchUrl,
-      startedAt: now,
-    })),
+    toolCalls: buildDemoActivity(agentId, new Date().toISOString()),
   };
 }
 

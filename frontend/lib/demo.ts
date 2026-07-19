@@ -335,35 +335,271 @@ export interface DemoTimeline {
 export const DEMO_TIMELINE: DemoTimeline = {
   activeAgent: [
     { at: 900, agentId: "researcher" },
-    { at: 6600, agentId: "pm" },
-    { at: 12400, agentId: "cmo" },
-    { at: 18200, agentId: null },
+    { at: 6500, agentId: "pm" },
+    { at: 12100, agentId: "cmo" },
+    { at: 17700, agentId: "lead-gen" },
+    { at: 23300, agentId: "brand" },
+    { at: 28900, agentId: null },
   ],
   ticker: [
-    { id: "t-1", at: 900, agentId: "researcher", label: "researcher.web-search  →  querying" },
-    { id: "t-2", at: 2300, agentId: "researcher", label: "researcher.web-search  ←  8 sources" },
-    { id: "t-3", at: 3600, agentId: "researcher", label: "researcher.competitor-scan  →  running" },
-    { id: "t-4", at: 5100, agentId: "researcher", label: "researcher.competitor-scan  ←  3 teardowns" },
-    { id: "t-5", at: 6600, agentId: "pm", label: "pm.roadmap-writer  →  scoping" },
-    { id: "t-6", at: 8400, agentId: "pm", label: "pm.roadmap-writer  ←  3 scope options" },
-    { id: "t-7", at: 9800, agentId: "pm", label: "pm  ⟶  referencing researcher.findings" },
-    { id: "t-8", at: 12400, agentId: "cmo", label: "cmo.landing-analyzer  →  auditing" },
-    { id: "t-9", at: 14000, agentId: "cmo", label: "cmo.landing-analyzer  ←  5 patterns" },
-    { id: "t-10", at: 15100, agentId: "cmo", label: "cmo.copy-tester  →  6 variants" },
-    { id: "t-11", at: 16800, agentId: "cmo", label: "cmo  ⟶  referencing pm.scope" },
+    // Researcher
+    { id: "t-r-1", at: 900, agentId: "researcher", label: "researcher.web-search  →  querying" },
+    { id: "t-r-2", at: 2200, agentId: "researcher", label: "researcher.web-search  ←  12 sources" },
+    { id: "t-r-3", at: 3200, agentId: "researcher", label: "researcher.competitor-scan  ←  3 teardowns" },
+    { id: "t-r-4", at: 4300, agentId: "researcher", label: "researcher.reddit-scraper  ←  340 posts" },
+    { id: "t-r-5", at: 5400, agentId: "researcher", label: "researcher.pricing-scan  ←  $8.99–$12.99" },
+    // PM
+    { id: "t-p-1", at: 6500, agentId: "pm", label: "pm.roadmap-writer  →  scoping" },
+    { id: "t-p-2", at: 7800, agentId: "pm", label: "pm.ticket-generator  ←  12 tickets" },
+    { id: "t-p-3", at: 9100, agentId: "pm", label: "pm.risk-analyzer  ←  4 flags" },
+    { id: "t-p-4", at: 10400, agentId: "pm", label: "pm.estimator  ←  142 hours" },
+    { id: "t-p-5", at: 11000, agentId: "pm", label: "pm  ⟶  referencing researcher.findings" },
+    // CMO
+    { id: "t-c-1", at: 12100, agentId: "cmo", label: "cmo.landing-analyzer  →  auditing" },
+    { id: "t-c-2", at: 13500, agentId: "cmo", label: "cmo.landing-analyzer  ←  5 patterns" },
+    { id: "t-c-3", at: 14700, agentId: "cmo", label: "cmo.copy-tester  ←  6 variants" },
+    { id: "t-c-4", at: 15800, agentId: "cmo", label: "cmo.launch-planner  ←  3 channels" },
+    { id: "t-c-5", at: 16600, agentId: "cmo", label: "cmo  ⟶  referencing pm.scope" },
+    // Lead Gen
+    { id: "t-l-1", at: 17700, agentId: "lead-gen", label: "lead-gen.apollo-search  ←  wrong channel" },
+    { id: "t-l-2", at: 19000, agentId: "lead-gen", label: "lead-gen.reddit-scraper  ←  184 posts" },
+    { id: "t-l-3", at: 20200, agentId: "lead-gen", label: "lead-gen.linkedin-scan  ←  50 profiles" },
+    { id: "t-l-4", at: 21400, agentId: "lead-gen", label: "lead-gen.newsletter-audit  ←  2 open" },
+    { id: "t-l-5", at: 22200, agentId: "lead-gen", label: "lead-gen  ⟶  referencing researcher.icp" },
+    // Brand
+    { id: "t-b-1", at: 23300, agentId: "brand", label: "brand.domain-check  ←  4 of 6 open" },
+    { id: "t-b-2", at: 24500, agentId: "brand", label: "brand.name-generator  ←  3 shortlisted" },
+    { id: "t-b-3", at: 25700, agentId: "brand", label: "brand.trademark-check  ←  clean" },
+    { id: "t-b-4", at: 27000, agentId: "brand", label: "brand.font-pairing  ←  Söhne × Newsreader" },
+    { id: "t-b-5", at: 27900, agentId: "brand", label: "brand  ⟶  referencing cmo.one-liner" },
   ],
   references: [
-    { id: "ref-1", at: 9800, from: "pm", to: "researcher", label: "pm reads researcher's wedge" },
-    { id: "ref-2", at: 16800, from: "cmo", to: "pm", label: "cmo anchors on pm's cut" },
+    { id: "ref-1", at: 11000, from: "pm", to: "researcher", label: "pm reads researcher's wedge" },
+    { id: "ref-2", at: 16600, from: "cmo", to: "pm", label: "cmo anchors on pm's cut" },
+    { id: "ref-3", at: 22200, from: "lead-gen", to: "researcher", label: "lead-gen pulls researcher's icp" },
+    { id: "ref-4", at: 27900, from: "brand", to: "cmo", label: "brand builds on cmo's one-liner" },
   ],
   badges: [
-    { at: 5500, agentId: "researcher" },
+    { at: 5600, agentId: "researcher" },
     { at: 11200, agentId: "pm" },
-    { at: 17400, agentId: "cmo" },
+    { at: 16800, agentId: "cmo" },
+    { at: 22400, agentId: "lead-gen" },
+    { at: 28100, agentId: "brand" },
   ],
 };
 
 export const DEMO_SEEN_KEY = "mindmap-os:demo-played";
+
+// ============================================================================
+// Auto-play activity — richer than the mock chat runner's plans, tuned for
+// the on-canvas sub-process theatre.
+// ============================================================================
+
+interface DemoActivitySpec {
+  toolId: string;
+  searchingLabel: string;
+  foundLabel: string;
+  summary: string;
+  fetchUrl: string;
+}
+
+export const DEMO_ACTIVITY: Record<AgentId, DemoActivitySpec[]> = {
+  researcher: [
+    {
+      toolId: "web-search",
+      searchingLabel: "Searching the web",
+      foundLabel: "12 sources",
+      summary: "meal-kit churn benchmarks",
+      fetchUrl: "GET api.serpapi.com/search?q=meal-kit-retention",
+    },
+    {
+      toolId: "competitor-scan",
+      searchingLabel: "Scanning competitors",
+      foundLabel: "3 teardowns",
+      summary: "Mealime, Plan to Eat, Paprika",
+      fetchUrl: "GET mealime.com, plantoeat.com, paprikaapp.com",
+    },
+    {
+      toolId: "reddit-scraper",
+      searchingLabel: "Scraping subreddits",
+      foundLabel: "340 posts",
+      summary: "r/mealprep sentiment sweep",
+      fetchUrl: "POST api.apify.com/v2/acts/reddit-scraper/runs",
+    },
+    {
+      toolId: "trend-analyzer",
+      searchingLabel: "Google Trends 5yr",
+      foundLabel: "peaked Jan '25",
+      summary: "interest curve charted",
+      fetchUrl: "GET trends.google.com/api/explore?q=meal-planning",
+    },
+    {
+      toolId: "pricing-scan",
+      searchingLabel: "Reading HelloFresh 10-K",
+      foundLabel: "$8.99–$12.99",
+      summary: "category price band",
+      fetchUrl: "GET hellofresh.com/ir/reports/q3-2024.pdf",
+    },
+  ],
+  pm: [
+    {
+      toolId: "roadmap-writer",
+      searchingLabel: "Drafting 30-day roadmap",
+      foundLabel: "3 scope options",
+      summary: "weekly milestones ready",
+      fetchUrl: "POST /internal/roadmap/scope",
+    },
+    {
+      toolId: "ticket-generator",
+      searchingLabel: "Breaking scope into tickets",
+      foundLabel: "12 tickets",
+      summary: "sized S / M / L",
+      fetchUrl: "POST /internal/tickets/generate",
+    },
+    {
+      toolId: "risk-analyzer",
+      searchingLabel: "Mapping scope creep",
+      foundLabel: "4 risks flagged",
+      summary: "grocery integration = P0",
+      fetchUrl: "POST /internal/risk/scan",
+    },
+    {
+      toolId: "estimator",
+      searchingLabel: "Estimating engineering",
+      foundLabel: "142 hours",
+      summary: "solo dev, ~21 days",
+      fetchUrl: "POST /internal/estimate/breakdown",
+    },
+  ],
+  cmo: [
+    {
+      toolId: "landing-analyzer",
+      searchingLabel: "Auditing hero copy",
+      foundLabel: "5 patterns",
+      summary: "3 competitor sites",
+      fetchUrl: "GET mealime.com/pricing, plantoeat.com",
+    },
+    {
+      toolId: "copy-tester",
+      searchingLabel: "Generating headlines",
+      foundLabel: "6 variants",
+      summary: "2 direct, 4 curiosity",
+      fetchUrl: "POST /internal/copy/variants?n=6",
+    },
+    {
+      toolId: "launch-planner",
+      searchingLabel: "Mapping launch channels",
+      foundLabel: "3 alternatives",
+      summary: "PH ruled out",
+      fetchUrl: "POST /internal/launch/channels",
+    },
+    {
+      toolId: "voice-profiler",
+      searchingLabel: "Extracting brand voice",
+      foundLabel: "profile saved",
+      summary: "warm, terse, no jargon",
+      fetchUrl: "POST /internal/voice/extract",
+    },
+    {
+      toolId: "sentiment-scan",
+      searchingLabel: "Cross-checking on X",
+      foundLabel: "0 conflicts",
+      summary: "positioning is unique",
+      fetchUrl: "GET x.com/search?q=meal+plan+wednesday",
+    },
+  ],
+  "lead-gen": [
+    {
+      toolId: "apollo-search",
+      searchingLabel: "Trying Apollo (B2B)",
+      foundLabel: "wrong channel",
+      summary: "consumer — pivoting",
+      fetchUrl: "GET api.apollo.io/v1/mixed_people/search",
+    },
+    {
+      toolId: "reddit-scraper",
+      searchingLabel: "Scanning r/workingparents",
+      foundLabel: "184 signal posts",
+      summary: "Sunday-plan mentions",
+      fetchUrl: "POST api.apify.com/v2/acts/reddit-scraper",
+    },
+    {
+      toolId: "linkedin-scan",
+      searchingLabel: "Sales Nav search",
+      foundLabel: "50 profiles",
+      summary: "recent activity signals",
+      fetchUrl: "GET linkedin.com/sales/search/people",
+    },
+    {
+      toolId: "newsletter-audit",
+      searchingLabel: "Auditing 8 newsletters",
+      foundLabel: "2 with sponsorships",
+      summary: "Parenting Reset, Kids TD",
+      fetchUrl: "GET convertkit-directory.com/parenting",
+    },
+    {
+      toolId: "outreach-drafter",
+      searchingLabel: "Drafting cold DM",
+      foundLabel: "3 templates",
+      summary: "subject + hook + ask",
+      fetchUrl: "POST /internal/outreach/draft",
+    },
+  ],
+  brand: [
+    {
+      toolId: "domain-check",
+      searchingLabel: "Checking .com, .app, .food",
+      foundLabel: "4 of 6 open",
+      summary: "wednesday.app available",
+      fetchUrl: "GET whoisxmlapi.com/whoisserver/WhoisService",
+    },
+    {
+      toolId: "trademark-check",
+      searchingLabel: "USPTO class 42",
+      foundLabel: "clean on top 3",
+      summary: "no blocking marks",
+      fetchUrl: "GET tsdr.uspto.gov/api/search?class=42",
+    },
+    {
+      toolId: "name-generator",
+      searchingLabel: "Generating candidates",
+      foundLabel: "3 shortlisted",
+      summary: "Pantry, Wednesday, Slate",
+      fetchUrl: "POST /internal/names/generate",
+    },
+    {
+      toolId: "font-pairing",
+      searchingLabel: "Pairing display + body",
+      foundLabel: "Söhne × Newsreader",
+      summary: "humanist serif + sans",
+      fetchUrl: "POST /internal/type/pair",
+    },
+    {
+      toolId: "color-audit",
+      searchingLabel: "Palette anti-refs",
+      foundLabel: "green ruled out",
+      summary: "health-tech cliché",
+      fetchUrl: "POST /internal/color/audit",
+    },
+  ],
+};
+
+export function buildDemoActivity(
+  agentId: AgentId,
+  startedAt: string,
+): ToolCall[] {
+  const specs = DEMO_ACTIVITY[agentId] ?? [];
+  return specs.map((s, i) => ({
+    id: `demo-${agentId}-${s.toolId}-${i}`,
+    toolId: s.toolId,
+    status: "running" as const,
+    summary: s.summary,
+    searchingLabel: s.searchingLabel,
+    foundLabel: s.foundLabel,
+    fetchUrl: s.fetchUrl,
+    startedAt,
+  }));
+}
 
 let _seedAttempted = false;
 export function seedDemoIfEmpty(
