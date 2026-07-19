@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 interface CanvasProps {
   children: ReactNode;
@@ -9,6 +16,12 @@ interface CanvasProps {
 const MIN_SCALE = 0.3;
 const MAX_SCALE = 3;
 const GRID_SIZE = 24;
+
+const CanvasScaleContext = createContext(1);
+
+export function useCanvasScale() {
+  return useContext(CanvasScaleContext);
+}
 
 export function Canvas({ children }: CanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +97,7 @@ export function Canvas({ children }: CanvasProps) {
         className="pointer-events-none absolute left-0 top-0 origin-top-left"
         style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
       >
-        {children}
+        <CanvasScaleContext.Provider value={scale}>{children}</CanvasScaleContext.Provider>
       </div>
     </div>
   );

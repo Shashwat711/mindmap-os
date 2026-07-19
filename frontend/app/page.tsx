@@ -6,9 +6,11 @@ import { AgentCard } from "@/components/canvas/AgentCard";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
-import type { AgentId, StartupContext } from "@/lib/types";
+import type { Agent, AgentId, StartupContext } from "@/lib/types";
 
-const DEFAULT_POSITIONS: Record<AgentId, { x: number; y: number }> = {
+type Positions = Record<AgentId, { x: number; y: number }>;
+
+const DEFAULT_POSITIONS: Positions = {
   researcher: { x: 80, y: 100 },
   pm: { x: 420, y: 60 },
   cmo: { x: 760, y: 120 },
@@ -19,19 +21,34 @@ const DEFAULT_POSITIONS: Record<AgentId, { x: number; y: number }> = {
 export default function Home() {
   const [context, setContext] = useState<StartupContext | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [positions, setPositions] = useState<Positions>(DEFAULT_POSITIONS);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const stored = readStorage<StartupContext>(STORAGE_KEYS.startupContext);
-    setContext(stored);
-    setDialogOpen(stored === null);
+    const storedContext = readStorage<StartupContext>(STORAGE_KEYS.startupContext);
+    setContext(storedContext);
+    setDialogOpen(storedContext === null);
+
+    const storedPositions = readStorage<Positions>(STORAGE_KEYS.cardPositions);
+    if (storedPositions) {
+      setPositions({ ...DEFAULT_POSITIONS, ...storedPositions });
+    }
+
     setHydrated(true);
   }, []);
 
-  function handleSave(next: StartupContext) {
+  function handleSaveContext(next: StartupContext) {
     writeStorage(STORAGE_KEYS.startupContext, next);
     setContext(next);
     setDialogOpen(false);
+  }
+
+  function handleDragEnd(agent: Agent, x: number, y: number) {
+    setPositions((prev) => {
+      const next = { ...prev, [agent.id]: { x, y } };
+      writeStorage(STORAGE_KEYS.cardPositions, next);
+      return next;
+    });
   }
 
   return (
@@ -54,8 +71,16 @@ export default function Home() {
       <div className="flex-1">
         <Canvas>
           {AGENTS.map((agent) => {
-            const pos = DEFAULT_POSITIONS[agent.id];
-            return <AgentCard key={agent.id} agent={agent} x={pos.x} y={pos.y} />;
+            const pos = positions[agent.id];
+            return (
+              <AgentCard
+                key={agent.id}
+                agent={agent}
+                x={pos.x}
+                y={pos.y}
+                onDragEnd={handleDragEnd}
+              />
+            );
           })}
         </Canvas>
       </div>
@@ -63,7 +88,7 @@ export default function Home() {
       <StartupContextDialog
         open={dialogOpen}
         initial={context}
-        onSave={handleSave}
+        onSave={handleSaveContext}
         onSkip={() => setDialogOpen(false)}
       />
     </main>
