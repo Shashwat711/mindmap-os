@@ -88,8 +88,18 @@ export function Canvas({ children }: CanvasProps) {
         panning ? "cursor-grabbing" : "cursor-grab"
       }`}
       style={{
-        backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)",
-        backgroundSize: `${GRID_SIZE * scale}px ${GRID_SIZE * scale}px`,
+        backgroundImage: `
+          linear-gradient(to right, rgba(28, 25, 23, 0.055) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(28, 25, 23, 0.055) 1px, transparent 1px),
+          linear-gradient(to right, rgba(28, 25, 23, 0.025) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(28, 25, 23, 0.025) 1px, transparent 1px)
+        `,
+        backgroundSize: `
+          ${GRID_SIZE * 4 * scale}px ${GRID_SIZE * 4 * scale}px,
+          ${GRID_SIZE * 4 * scale}px ${GRID_SIZE * 4 * scale}px,
+          ${GRID_SIZE * scale}px ${GRID_SIZE * scale}px,
+          ${GRID_SIZE * scale}px ${GRID_SIZE * scale}px
+        `,
         backgroundPosition: `${offset.x}px ${offset.y}px`,
       }}
     >
