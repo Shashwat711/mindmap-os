@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Canvas } from "@/components/canvas/Canvas";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import type { StartupContext } from "@/lib/types";
@@ -24,18 +25,25 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-4xl font-bold tracking-tight">mindmap-os</h1>
-      <p className="text-lg text-muted-foreground">Your AI cofounder team on a canvas</p>
+    <main className="flex h-screen flex-col">
+      <header className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <div className="flex items-baseline gap-3">
+          <span className="text-sm font-semibold tracking-tight">mindmap-os</span>
+          <span className="text-xs text-muted-foreground">Your AI cofounder team on a canvas</span>
+        </div>
+        {hydrated && context && (
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            Edit context
+          </button>
+        )}
+      </header>
 
-      {hydrated && context && (
-        <button
-          onClick={() => setDialogOpen(true)}
-          className="mt-4 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          Edit startup context
-        </button>
-      )}
+      <div className="flex-1">
+        <Canvas>{/* agent cards render here */}</Canvas>
+      </div>
 
       <StartupContextDialog
         open={dialogOpen}
