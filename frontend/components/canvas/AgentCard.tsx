@@ -24,12 +24,22 @@ interface Props {
   x: number;
   y: number;
   working?: boolean;
+  selected?: boolean;
   index?: number;
   onClick?: (agent: Agent) => void;
   onDragEnd?: (agent: Agent, x: number, y: number) => void;
 }
 
-export function AgentCard({ agent, x, y, working, index = 0, onClick, onDragEnd }: Props) {
+export function AgentCard({
+  agent,
+  x,
+  y,
+  working,
+  selected,
+  index = 0,
+  onClick,
+  onDragEnd,
+}: Props) {
   const Icon = ICON_MAP[agent.icon] ?? Telescope;
   const scale = useCanvasScale();
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
@@ -90,6 +100,9 @@ export function AgentCard({ agent, x, y, working, index = 0, onClick, onDragEnd 
         borderLeftWidth: 4,
         borderLeftColor: agent.color,
         animation: `card-appear 380ms ease-out ${index * 70}ms backwards`,
+        boxShadow: selected
+          ? `0 0 0 2px ${agent.accentColor}55, 0 4px 12px rgba(28, 25, 23, 0.08), 0 10px 30px rgba(28, 25, 23, 0.10)`
+          : undefined,
       }}
     >
       {working && (

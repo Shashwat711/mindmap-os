@@ -134,6 +134,7 @@ export default function Home() {
           {AGENTS.map((agent, i) => {
             const pos = positions[agent.id];
             const working = activity?.agentId === agent.id;
+            const isSelected = selectedAgent?.id === agent.id;
             return (
               <AgentCard
                 key={agent.id}
@@ -141,6 +142,7 @@ export default function Home() {
                 x={pos.x}
                 y={pos.y}
                 working={working}
+                selected={isSelected}
                 index={i}
                 onDragEnd={handleDragEnd}
                 onClick={setSelectedAgent}
