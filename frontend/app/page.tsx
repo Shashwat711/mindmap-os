@@ -12,10 +12,57 @@ import {
   Terminal,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AgentCard } from "@/components/canvas/AgentCard";
 import { AGENTS, getAgentById } from "@/lib/agents";
 import type { Agent } from "@/lib/types";
+
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(20px)",
+        transition: `opacity 620ms ease-out ${delay}ms, transform 620ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 const ICON_MAP: Record<string, typeof Telescope> = {
   Telescope,
@@ -233,9 +280,11 @@ function Hero() {
 function SocialProof() {
   return (
     <section className="border-y border-neutral-900 py-6">
-      <p className="mx-auto max-w-3xl px-6 text-center font-mono text-[11.5px] text-neutral-500">
-        Built for solo founders who&apos;d rather ship than hire.
-      </p>
+      <Reveal>
+        <p className="mx-auto max-w-3xl px-6 text-center font-mono text-[11.5px] text-neutral-500">
+          Built for solo founders who&apos;d rather ship than hire.
+        </p>
+      </Reveal>
     </section>
   );
 }
@@ -315,8 +364,21 @@ function TeamCard({ agent }: { agent: Agent }) {
           <span style={{ color: agent.accentColor }}>$</span>
           <span className="text-neutral-500">status:</span>
           <span className="text-neutral-300 transition-colors duration-150 group-hover:text-neutral-100">
-            <span className="hidden group-hover:inline">thinking...</span>
             <span className="group-hover:hidden">idle</span>
+            <span className="hidden group-hover:inline-flex">
+              thinking
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  style={{
+                    animation: "thinking-dot 1.2s ease-in-out infinite",
+                    animationDelay: `${i * 180}ms`,
+                  }}
+                >
+                  .
+                </span>
+              ))}
+            </span>
           </span>
         </div>
       </div>
@@ -327,23 +389,28 @@ function TeamCard({ agent }: { agent: Agent }) {
 function FiveAgents() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-24">
-      <div className="mb-12 text-center">
-        <div
-          className="mb-3 inline-block font-mono text-[11.5px] uppercase tracking-[0.16em]"
-          style={{ color: "#c2410c" }}
-        >
-          $ ls ./team
+      <Reveal>
+        <div className="mb-12 text-center">
+          <div
+            className="mb-3 inline-block font-mono text-[11.5px] uppercase tracking-[0.16em]"
+            style={{ color: "#c2410c" }}
+          >
+            $ ls ./team
+          </div>
+          <h2 className="text-[36px] font-semibold tracking-tight text-neutral-100 md:text-[44px]">
+            Meet your team
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-[14.5px] text-neutral-500">
+            Five specialists, one shared context. They read each other&apos;s
+            work.
+          </p>
         </div>
-        <h2 className="text-[36px] font-semibold tracking-tight text-neutral-100 md:text-[44px]">
-          Meet your team
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-[14.5px] text-neutral-500">
-          Five specialists, one shared context. They read each other&apos;s work.
-        </p>
-      </div>
+      </Reveal>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {AGENTS.map((agent) => (
-          <TeamCard key={agent.id} agent={agent} />
+        {AGENTS.map((agent, i) => (
+          <Reveal key={agent.id} delay={80 * i}>
+            <TeamCard agent={agent} />
+          </Reveal>
         ))}
       </div>
     </section>
@@ -381,40 +448,47 @@ function HowItWorks() {
       style={{ backgroundColor: "#080808" }}
     >
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-12 text-center">
-          <div
-            className="mb-3 inline-block font-mono text-[11.5px] uppercase tracking-[0.16em]"
-            style={{ color: "#c2410c" }}
-          >
-            $ ./how-it-works
-          </div>
-          <h2 className="text-[36px] font-semibold tracking-tight text-neutral-100 md:text-[44px]">
-            How it works
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {steps.map(({ number, title, description, Icon }) => (
+        <Reveal>
+          <div className="mb-12 text-center">
             <div
-              key={number}
-              className="rounded-lg border p-6"
-              style={{ backgroundColor: "#0a0a0a", borderColor: "#1a1a1a" }}
+              className="mb-3 inline-block font-mono text-[11.5px] uppercase tracking-[0.16em]"
+              style={{ color: "#c2410c" }}
             >
-              <div className="mb-5 flex items-center justify-between">
-                <span
-                  className="font-mono text-[11px] tracking-[0.12em]"
-                  style={{ color: "#c2410c" }}
-                >
-                  {number}
-                </span>
-                <Icon size={16} strokeWidth={1.75} className="text-neutral-500" />
-              </div>
-              <h3 className="text-[17px] font-semibold tracking-tight text-neutral-100">
-                {title}
-              </h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-neutral-500">
-                {description}
-              </p>
+              $ ./how-it-works
             </div>
+            <h2 className="text-[36px] font-semibold tracking-tight text-neutral-100 md:text-[44px]">
+              How it works
+            </h2>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {steps.map(({ number, title, description, Icon }, i) => (
+            <Reveal key={number} delay={100 * i}>
+              <div
+                className="h-full rounded-lg border p-6"
+                style={{ backgroundColor: "#0a0a0a", borderColor: "#1a1a1a" }}
+              >
+                <div className="mb-5 flex items-center justify-between">
+                  <span
+                    className="font-mono text-[11px] tracking-[0.12em]"
+                    style={{ color: "#c2410c" }}
+                  >
+                    {number}
+                  </span>
+                  <Icon
+                    size={16}
+                    strokeWidth={1.75}
+                    className="text-neutral-500"
+                  />
+                </div>
+                <h3 className="text-[17px] font-semibold tracking-tight text-neutral-100">
+                  {title}
+                </h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-neutral-500">
+                  {description}
+                </p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -425,28 +499,30 @@ function HowItWorks() {
 function FinalCTA() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-28 text-center">
-      <h2 className="text-balance text-[36px] font-semibold leading-tight tracking-tight text-neutral-100 md:text-[48px]">
-        Stop context-switching between five ChatGPT tabs.
-      </h2>
-      <p className="mx-auto mt-5 max-w-xl text-[15px] text-neutral-500">
-        Give your idea a team. Ship in a week what would have taken a quarter of
-        indecision.
-      </p>
-      <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/sign-in"
-          className="inline-flex items-center gap-2 rounded-md bg-neutral-100 px-5 py-2.5 text-[13.5px] font-medium text-neutral-950 transition-colors hover:bg-white"
-        >
-          Start Building
-          <ArrowRight size={14} strokeWidth={2.25} />
-        </Link>
-        <Link
-          href="/demo"
-          className="inline-flex items-center gap-2 rounded-md border border-neutral-800 bg-transparent px-5 py-2.5 font-mono text-[13px] text-neutral-300 transition-colors hover:border-neutral-600 hover:text-neutral-100"
-        >
-          watch it work →
-        </Link>
-      </div>
+      <Reveal>
+        <h2 className="text-balance text-[36px] font-semibold leading-tight tracking-tight text-neutral-100 md:text-[48px]">
+          Stop context-switching between five ChatGPT tabs.
+        </h2>
+        <p className="mx-auto mt-5 max-w-xl text-[15px] text-neutral-500">
+          Give your idea a team. Ship in a week what would have taken a quarter
+          of indecision.
+        </p>
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/sign-in"
+            className="inline-flex items-center gap-2 rounded-md bg-neutral-100 px-5 py-2.5 text-[13.5px] font-medium text-neutral-950 transition-colors hover:bg-white"
+          >
+            Start Building
+            <ArrowRight size={14} strokeWidth={2.25} />
+          </Link>
+          <Link
+            href="/demo"
+            className="inline-flex items-center gap-2 rounded-md border border-neutral-800 bg-transparent px-5 py-2.5 font-mono text-[13px] text-neutral-300 transition-colors hover:border-neutral-600 hover:text-neutral-100"
+          >
+            watch it work →
+          </Link>
+        </div>
+      </Reveal>
     </section>
   );
 }
