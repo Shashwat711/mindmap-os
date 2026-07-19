@@ -38,46 +38,90 @@ interface Props {
   onActivity?: (activity: { agentId: Agent["id"]; toolCalls: ToolCall[] } | null) => void;
 }
 
+function SourcePill({ source, accent }: { source: { domain: string }; accent: string }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[10.5px] text-foreground/80"
+      style={{ animation: "message-in 260ms ease-out" }}
+    >
+      <span
+        aria-hidden
+        className="h-1.5 w-1.5 shrink-0 rounded-[1px]"
+        style={{ backgroundColor: accent }}
+      />
+      {source.domain}
+    </span>
+  );
+}
+
 function ToolCallChip({ call, accent }: { call: ToolCall; accent: string }) {
   const tool = getToolById(call.toolId);
-  const label = tool?.name ?? call.toolId;
-  const dotClass =
-    call.status === "pending"
-      ? "border border-border"
-      : call.status === "running"
-        ? "animate-pulse"
-        : call.status === "done"
-          ? ""
-          : "bg-destructive";
+  const toolLabel = tool?.name ?? call.toolId;
+  const running = call.status === "running";
+  const done = call.status === "done";
+  const primary =
+    running && call.searchingLabel
+      ? call.searchingLabel
+      : done && call.foundLabel
+        ? call.foundLabel
+        : call.summary;
+  const secondary =
+    done && call.foundLabel ? call.summary : done ? call.result : undefined;
+
   return (
     <div
-      className="flex items-start gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-[12px]"
+      className="rounded-md border border-border bg-card px-2.5 py-1.5 text-[12px]"
       style={{ animation: "message-in 220ms ease-out" }}
     >
-      {call.status === "done" ? (
-        <Check
-          size={12}
-          strokeWidth={2.5}
-          className="mt-[3px] shrink-0"
-          style={{ color: accent }}
-        />
-      ) : (
-        <span
-          className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${dotClass}`}
-          style={call.status === "running" ? { backgroundColor: accent } : undefined}
-        />
-      )}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            {label}
-          </span>
-        </div>
-        <div className="mt-0.5 text-[12.5px] text-foreground/85">{call.summary}</div>
-        {call.status === "done" && call.result && (
-          <div className="mt-0.5 text-[11.5px] text-muted-foreground">{call.result}</div>
+      <div className="flex items-start gap-2">
+        {done ? (
+          <Check
+            size={12}
+            strokeWidth={2.5}
+            className="mt-[3px] shrink-0"
+            style={{ color: accent }}
+          />
+        ) : (
+          <span
+            className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${
+              call.status === "pending"
+                ? "border border-border"
+                : running
+                  ? "animate-pulse"
+                  : "bg-destructive"
+            }`}
+            style={running ? { backgroundColor: accent } : undefined}
+          />
         )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              {toolLabel}
+            </span>
+            {running && (
+              <span
+                aria-hidden
+                className="text-[10.5px] font-mono text-muted-foreground/70"
+              >
+                …
+              </span>
+            )}
+          </div>
+          <div className="mt-0.5 text-[12.5px] leading-snug text-foreground/85">
+            {primary}
+          </div>
+          {secondary && (
+            <div className="mt-0.5 text-[11.5px] text-muted-foreground">{secondary}</div>
+          )}
+        </div>
       </div>
+      {done && call.sources && call.sources.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5 pl-5">
+          {call.sources.map((source, i) => (
+            <SourcePill key={`${source.domain}-${i}`} source={source} accent={accent} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

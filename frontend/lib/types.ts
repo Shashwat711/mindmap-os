@@ -38,6 +38,10 @@ export interface Tool {
 
 export type ToolCallStatus = "pending" | "running" | "done" | "error";
 
+export interface ToolCallSource {
+  domain: string;
+}
+
 export interface ToolCall {
   id: string;
   toolId: string;
@@ -46,6 +50,9 @@ export interface ToolCall {
   result?: string;
   startedAt: string;
   endedAt?: string;
+  searchingLabel?: string;
+  foundLabel?: string;
+  sources?: ToolCallSource[];
 }
 
 export interface ChatMessage {

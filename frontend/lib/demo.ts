@@ -1,4 +1,10 @@
-import type { AgentId, ChatMessage, StartupContext, ToolCall } from "./types";
+import type {
+  AgentId,
+  ChatMessage,
+  StartupContext,
+  ToolCall,
+  ToolCallSource,
+} from "./types";
 
 export const DEMO_CONTEXT: StartupContext = {
   idea: "A meal-prep app for busy parents that plans a week of dinners from what's already in the fridge, in under 90 seconds.",
@@ -16,16 +22,7 @@ const SOURCES = {
   parenting: ["scarymommy.com", "todaysparent.com", "hn.parents.club"],
 };
 
-export interface DemoSourceChip {
-  domain: string;
-  favicon?: string;
-}
-
-export interface DemoToolCall extends Omit<ToolCall, "startedAt" | "endedAt"> {
-  sources?: DemoSourceChip[];
-  searchingLabel?: string;
-  foundLabel?: string;
-}
+export type DemoToolCall = Omit<ToolCall, "startedAt" | "endedAt">;
 
 interface Exchange {
   user: string;
@@ -34,7 +31,7 @@ interface Exchange {
   referencesAgent?: AgentId;
 }
 
-function chip(list: string[]): DemoSourceChip[] {
+function chip(list: string[]): ToolCallSource[] {
   return list.map((domain) => ({ domain }));
 }
 
@@ -286,11 +283,7 @@ function toChatMessage(
     role,
     content,
     toolCalls: toolCalls?.map((tc, i) => ({
-      id: tc.id,
-      toolId: tc.toolId,
-      status: tc.status,
-      summary: tc.summary,
-      result: tc.result,
+      ...tc,
       startedAt: new Date(baseTime + index * 60000 + i * 3000).toISOString(),
       endedAt: new Date(baseTime + index * 60000 + i * 3000 + 2500).toISOString(),
     })),
