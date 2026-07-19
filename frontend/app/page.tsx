@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Canvas } from "@/components/canvas/Canvas";
 import { AgentCard } from "@/components/canvas/AgentCard";
 import { ActivityLayer } from "@/components/canvas/ActivityLayer";
+import { ReferenceLines } from "@/components/canvas/ReferenceLines";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
@@ -12,7 +13,12 @@ import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import { useWorkspace } from "@/lib/hooks/useWorkspace";
 import { useStartupContext } from "@/lib/hooks/useStartupContext";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { DEMO_CONTEXT, DEMO_SEEN_KEY, seedDemoIfEmpty } from "@/lib/demo";
+import {
+  DEMO_CONTEXT,
+  DEMO_SEEN_KEY,
+  seedDemoIfEmpty,
+  type ReferenceBeat,
+} from "@/lib/demo";
 import { useDemoRunner } from "@/lib/hooks/useDemoRunner";
 import { planToolCalls } from "@/lib/mock-responses";
 import type {
@@ -86,6 +92,7 @@ export default function Home() {
     toolCalls: ToolCall[];
   } | null>(null);
   const [unreadAgents, setUnreadAgents] = useState<Set<AgentId>>(new Set());
+  const [activeRefs, setActiveRefs] = useState<ReferenceBeat[]>([]);
   const [demoEnabled, setDemoEnabled] = useState(false);
 
   useEffect(() => {
@@ -105,6 +112,12 @@ export default function Home() {
         next.add(agentId);
         return next;
       }),
+    onReference: (ref) => {
+      setActiveRefs((prev) => [...prev, ref]);
+      window.setTimeout(() => {
+        setActiveRefs((prev) => prev.filter((r) => r.id !== ref.id));
+      }, 2400);
+    },
     onFinished: () => setDemoEnabled(false),
   });
 
@@ -221,6 +234,7 @@ export default function Home() {
             );
           })}
           <ActivityLayer activity={activity} positions={positions} />
+          <ReferenceLines refs={activeRefs} positions={positions} />
         </Canvas>
       </div>
 

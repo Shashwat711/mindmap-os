@@ -90,6 +90,22 @@
   }
 }
 
+@keyframes ref-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ref-fade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @layer base {
   :root {
     /* DESIGN.md tokens */
