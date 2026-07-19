@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "@/components/canvas/Canvas";
 import { AgentCard } from "@/components/canvas/AgentCard";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { AGENTS } from "@/lib/agents";
 import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
@@ -22,6 +23,7 @@ export default function Home() {
   const [context, setContext] = useState<StartupContext | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [positions, setPositions] = useState<Positions>(DEFAULT_POSITIONS);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -79,11 +81,18 @@ export default function Home() {
                 x={pos.x}
                 y={pos.y}
                 onDragEnd={handleDragEnd}
+                onClick={setSelectedAgent}
               />
             );
           })}
         </Canvas>
       </div>
+
+      <ChatPanel
+        agent={selectedAgent}
+        context={context}
+        onClose={() => setSelectedAgent(null)}
+      />
 
       <StartupContextDialog
         open={dialogOpen}
