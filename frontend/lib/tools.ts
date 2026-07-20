@@ -75,6 +75,38 @@ export const TOOLS: Tool[] = [
     description: "USPTO and international trademark search for a proposed name.",
     requiresKey: false,
   },
+  {
+    id: "google-drive",
+    name: "Google Drive",
+    provider: "google",
+    description: "Read files and search across your Drive.",
+    requiresKey: true,
+    keyStorageName: "google-drive",
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    provider: "github",
+    description: "Browse repos, issues, and PRs your team already lives in.",
+    requiresKey: true,
+    keyStorageName: "github",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    provider: "slack",
+    description: "Post to channels and read recent thread context.",
+    requiresKey: true,
+    keyStorageName: "slack",
+  },
+  {
+    id: "notion",
+    name: "Notion",
+    provider: "notion",
+    description: "Pull specs and notes straight from your workspace.",
+    requiresKey: true,
+    keyStorageName: "notion",
+  },
 ];
 
 export function getToolById(id: string): Tool | undefined {

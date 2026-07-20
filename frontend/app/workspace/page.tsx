@@ -86,8 +86,12 @@ export default function Workspace() {
   }, [workspaceLoading, contextLoading, context]);
 
   async function handleSaveContext(next: StartupContext) {
+    const wasEmpty = !context;
     await saveContext(next);
     setContextDialogOpen(false);
+    if (wasEmpty && !connector) {
+      setSettingsOpen(true);
+    }
   }
 
   function handleSaveConnector(next: ModelConnector) {
