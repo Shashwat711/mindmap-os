@@ -4,24 +4,14 @@ import { useEffect, useState } from "react";
 import { Canvas } from "@/components/canvas/Canvas";
 import { AgentCard } from "@/components/canvas/AgentCard";
 import { ActivityLayer } from "@/components/canvas/ActivityLayer";
-import { ReferenceLines } from "@/components/canvas/ReferenceLines";
-import { ActivityTicker } from "@/components/canvas/ActivityTicker";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { StartupContextDialog } from "@/components/onboarding/StartupContextDialog";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { AGENTS } from "@/lib/agents";
-import { readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
+import { clearStorage, readStorage, writeStorage, STORAGE_KEYS } from "@/lib/storage";
 import { useWorkspace } from "@/lib/hooks/useWorkspace";
 import { useStartupContext } from "@/lib/hooks/useStartupContext";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
-import {
-  DEMO_SEEN_KEY,
-  buildDemoActivity,
-  seedDemoIfEmpty,
-  type ReferenceBeat,
-  type TickerEvent,
-} from "@/lib/demo";
-import { useDemoRunner } from "@/lib/hooks/useDemoRunner";
+import { DEMO_CONTEXT } from "@/lib/demo";
 import type {
   Agent,
   AgentId,
@@ -31,13 +21,14 @@ import type {
   ToolCall,
 } from "@/lib/types";
 
-if (typeof window !== "undefined" && !isSupabaseConfigured()) {
-  seedDemoIfEmpty(
-    () => readStorage<StartupContext>(STORAGE_KEYS.startupContext) !== null,
-    (ctx) => writeStorage(STORAGE_KEYS.startupContext, ctx),
-    (agentId) => readStorage(STORAGE_KEYS.chatHistory(agentId)) !== null,
-    (agentId, msgs) => writeStorage(STORAGE_KEYS.chatHistory(agentId), msgs),
-  );
+// One-time cleanup: clear any auto-seeded demo state left over from an
+// earlier version, so the fresh onboarding actually shows.
+if (typeof window !== "undefined") {
+  const stored = readStorage<StartupContext>(STORAGE_KEYS.startupContext);
+  if (stored?.idea === DEMO_CONTEXT.idea) {
+    clearStorage(STORAGE_KEYS.startupContext);
+    AGENTS.forEach((a) => clearStorage(STORAGE_KEYS.chatHistory(a.id)));
+  }
 }
 
 type Positions = Record<AgentId, { x: number; y: number }>;
@@ -55,17 +46,7 @@ function connectorLabel(connector: ModelConnector | null): string {
   return connector.provider === "anthropic" ? "Anthropic" : "OpenAI";
 }
 
-function synthesizeActivity(agentId: AgentId): {
-  agentId: AgentId;
-  toolCalls: ToolCall[];
-} {
-  return {
-    agentId,
-    toolCalls: buildDemoActivity(agentId, new Date().toISOString()),
-  };
-}
-
-export default function Home() {
+export default function Workspace() {
   const { activeId, loading: workspaceLoading } = useWorkspace();
   const {
     context,
@@ -84,58 +65,6 @@ export default function Home() {
     agentId: AgentId;
     toolCalls: ToolCall[];
   } | null>(null);
-  const [unreadAgents, setUnreadAgents] = useState<Set<AgentId>>(new Set());
-  const [activeRefs, setActiveRefs] = useState<ReferenceBeat[]>([]);
-  const [tickerEvents, setTickerEvents] = useState<TickerEvent[]>([]);
-  const [tickerStart, setTickerStart] = useState<number | null>(null);
-  const [demoEnabled, setDemoEnabled] = useState(false);
-
-  useEffect(() => {
-    if (isSupabaseConfigured()) return;
-    if (typeof window === "undefined") return;
-    if (window.localStorage.getItem(DEMO_SEEN_KEY)) return;
-    setDemoEnabled(true);
-  }, []);
-
-  useDemoRunner(demoEnabled, {
-    onActive: (agentId) =>
-      setActivity(agentId ? synthesizeActivity(agentId) : null),
-    onBadge: (agentId) =>
-      setUnreadAgents((prev) => {
-        if (prev.has(agentId)) return prev;
-        const next = new Set(prev);
-        next.add(agentId);
-        return next;
-      }),
-    onReference: (ref) => {
-      setActiveRefs((prev) => [...prev, ref]);
-      window.setTimeout(() => {
-        setActiveRefs((prev) => prev.filter((r) => r.id !== ref.id));
-      }, 2400);
-    },
-    onTicker: (event) => {
-      setTickerStart((prev) => prev ?? Date.now());
-      setTickerEvents((prev) => [...prev, event]);
-    },
-    onFinished: () => {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(DEMO_SEEN_KEY, "1");
-      }
-      setDemoEnabled(false);
-    },
-  });
-
-  function selectAgent(agent: Agent | null) {
-    setSelectedAgent(agent);
-    if (agent) {
-      setUnreadAgents((prev) => {
-        if (!prev.has(agent.id)) return prev;
-        const next = new Set(prev);
-        next.delete(agent.id);
-        return next;
-      });
-    }
-  }
 
   useEffect(() => {
     const storedPositions = readStorage<Positions>(STORAGE_KEYS.cardPositions);
@@ -184,14 +113,19 @@ export default function Home() {
     });
   }
 
-  const connectorConnected = connector && connector.provider !== "mock" && connector.apiKey;
+  const connectorConnected =
+    connector && connector.provider !== "mock" && connector.apiKey;
 
   return (
     <main className="flex h-screen flex-col">
       <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-4">
         <div className="flex items-baseline gap-2.5">
-          <span className="text-sm font-semibold tracking-tight text-foreground">mindmap-os</span>
-          <span className="text-xs text-muted-foreground">Your AI cofounder team on a canvas</span>
+          <span className="text-sm font-semibold tracking-tight text-foreground">
+            mindmap-os
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Your AI cofounder team on a canvas
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -230,24 +164,21 @@ export default function Home() {
                 y={pos.y}
                 working={working}
                 selected={isSelected}
-                unread={unreadAgents.has(agent.id)}
                 index={i}
                 onDragEnd={handleDragEnd}
-                onClick={selectAgent}
+                onClick={setSelectedAgent}
               />
             );
           })}
           <ActivityLayer activity={activity} positions={positions} />
-          <ReferenceLines refs={activeRefs} positions={positions} />
         </Canvas>
-        <ActivityTicker events={tickerEvents} startTime={tickerStart} />
       </div>
 
       <ChatPanel
         agent={selectedAgent}
         context={context}
         connector={connector}
-        onClose={() => selectAgent(null)}
+        onClose={() => setSelectedAgent(null)}
         onActivity={setActivity}
       />
 
